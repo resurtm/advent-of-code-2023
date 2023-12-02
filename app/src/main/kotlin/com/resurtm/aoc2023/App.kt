@@ -3,24 +3,28 @@ package com.resurtm.aoc2023
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    val dayNum = parseArgs(args)
-    if (!dayNum.first) {
-        println("Unable to parse the provided day number")
+    try {
+        val taskInfo = parseArgs(args)
+        launchSolution(taskInfo.first, taskInfo.second)
+    } catch (ex: Exception) {
+        println("Error: $ex")
         exitProcess(-1)
     }
-    launchDayNum(dayNum.second)
 }
 
-fun parseArgs(args: Array<String>): Pair<Boolean, Int> {
-    if (args.size != 1) {
-        return Pair(false, 0)
+fun parseArgs(args: Array<String>): Pair<Int, String> {
+    if (args.size != 2) {
+        throw Exception("Argument count must be two")
     }
-    return Pair(true, args.getOrElse(0) { "1" }.toInt())
+    return Pair(
+        args.getOrElse(0) { "1" }.toInt(),
+        args.getOrElse(1) { "test" }
+    )
 }
 
-fun launchDayNum(dayNum: Int) {
+fun launchSolution(dayNum: Int, testCase: String) {
     when (dayNum) {
-        1 -> launchDay01()
+        1 -> launchDay01("/day%02d/%s.txt".format(dayNum, testCase))
         else -> {
             println("Unable to launch the provided day number")
             exitProcess(-1)

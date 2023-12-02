@@ -1,6 +1,6 @@
 package com.resurtm.aoc2023
 
-fun launchDay01() {
+fun launchDay01(testCase: String) {
     val calib = mutableListOf<Int>()
 
     fun parseLine(line: String) {
@@ -16,7 +16,7 @@ fun launchDay01() {
         calib.add(calibItem.toInt())
     }
 
-    val reader = object {}.javaClass.getResourceAsStream("/day01/3.txt")?.bufferedReader() ?: return
+    val reader = object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader() ?: return
     while (true) {
         parseLine(reader.readLine() ?: break)
     }
