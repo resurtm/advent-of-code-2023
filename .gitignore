@@ -6,4 +6,4 @@ build
 
 .idea
 
-app/src/
+app/src/main/resources/day*

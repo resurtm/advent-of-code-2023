@@ -1,5 +1,6 @@
 package com.resurtm.aoc2023
 
+import com.resurtm.aoc2023.day01.launchDay01
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {

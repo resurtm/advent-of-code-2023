@@ -1,19 +1,23 @@
-package com.resurtm.aoc2023
+package com.resurtm.aoc2023.day01
 
 fun launchDay01(testCase: String) {
-    val calib = mutableListOf<Int>()
+    launchInternal(testCase)
+}
+
+private fun launchInternal(testCase: String) {
+    val accum = mutableListOf<Int>()
 
     fun parseLine(line: String) {
-        var calibItem = ""
+        var newItem = ""
         for (ln in arrayOf(line, line.reversed())) {
             for (ch in ln.iterator()) {
                 if (ch in '1'..'9') {
-                    calibItem += ch
+                    newItem += ch
                     break
                 }
             }
         }
-        calib.add(calibItem.toInt())
+        accum.add(newItem.toInt())
     }
 
     val reader = object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader() ?: return
@@ -21,5 +25,5 @@ fun launchDay01(testCase: String) {
         parseLine(reader.readLine() ?: break)
     }
 
-    println(calib.reduce { acc, i -> acc + i })
+    println(accum.reduce { acc, i -> acc + i })
 }
