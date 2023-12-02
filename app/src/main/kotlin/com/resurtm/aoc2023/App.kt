@@ -23,7 +23,7 @@ fun launchDayNum(dayNum: Int) {
         1 -> launchDay01()
         else -> {
             println("Unable to launch the provided day number")
-            exitProcess(-2)
+            exitProcess(-1)
         }
     }
 }
