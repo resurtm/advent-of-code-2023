@@ -2,7 +2,7 @@ package com.resurtm.aoc2023.day03
 
 fun launchDay03(testCase: String) {
     val grid = buildGrid(testCase)
-    val digits = '1'..'9'
+    val digits = '0'..'9'
     val digitsEx = digits + '.'
 
     fun checkNeighbors(rowIndex: Int, chIndex: Int): Boolean {
@@ -18,8 +18,7 @@ fun launchDay03(testCase: String) {
         val ml = if (chIndex == 0) '.' else grid[rowIndex][chIndex - 1]
         val mr = if (chIndex == w) '.' else grid[rowIndex][chIndex + 1]
 
-        return !(tl == '.' && tm in digitsEx && tr == '.' && bl == '.' &&
-                bm in digitsEx && br == '.' && ml in digitsEx && mr in digitsEx)
+        return !(tl in digitsEx && tm in digitsEx && tr in digitsEx && bl in digitsEx && bm in digitsEx && br in digitsEx && ml in digitsEx && mr in digitsEx)
     }
 
     var active = false
@@ -35,18 +34,25 @@ fun launchDay03(testCase: String) {
                 accum = ""
             }
             if (active && ch !in digits) {
-                active = false
                 if (adj) {
                     result += accum.toInt()
                 }
+                active = false
                 adj = false
                 accum = ""
             }
             if (active) {
-                accum += ch
                 adj = checkNeighbors(rowIndex, chIndex) || adj
+                accum += ch
             }
         }
+
+        if (adj) {
+            result += accum.toInt()
+        }
+        active = false
+        adj = false
+        accum = ""
     }
 
     println("Part 1 answer: $result")
