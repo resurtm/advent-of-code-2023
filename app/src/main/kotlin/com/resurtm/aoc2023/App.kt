@@ -4,6 +4,7 @@ import com.resurtm.aoc2023.day01.launchDay01
 import com.resurtm.aoc2023.day02.launchDay02
 import com.resurtm.aoc2023.day03.launchDay03
 import com.resurtm.aoc2023.day04.launchDay04
+import com.resurtm.aoc2023.day05.launchDay05
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
@@ -30,6 +31,7 @@ fun launchSolution(dayNum: Int, testCase: String) {
         2 -> launchDay02(caseName)
         3 -> launchDay03(caseName)
         4 -> launchDay04(caseName)
+        5 -> launchDay05(caseName)
         else -> {
             println("Unable to launch the provided day number")
             exitProcess(-1)
