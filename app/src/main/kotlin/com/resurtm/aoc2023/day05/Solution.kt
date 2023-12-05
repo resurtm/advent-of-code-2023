@@ -2,6 +2,27 @@ package com.resurtm.aoc2023.day05
 
 fun launchDay05(testCase: String) {
     val env = readEnv(testCase)
+    println("Day 05, part 01: ${solvePart1(env)}")
+    println("Day 05, part 02: ${solvePart2(env)}")
+}
+
+private fun solvePart2(env: Env): Long? {
+    var min: Long? = null
+    for (rawPair in env.seedsV2) {
+        for (raw in rawPair.first..rawPair.first + rawPair.second) {
+            var seed = raw
+            for (trans in env.trans) {
+                seed = doTrans(seed, trans)
+            }
+            if (min == null || min > seed) {
+                min = seed
+            }
+        }
+    }
+    return min
+}
+
+private fun solvePart1(env: Env): Long? {
     var min: Long? = null
     for (raw in env.seeds) {
         var seed = raw
@@ -12,7 +33,7 @@ fun launchDay05(testCase: String) {
             min = seed
         }
     }
-    println("Day 05, part 01: $min")
+    return min
 }
 
 private fun doTrans(seed: Long, trans: List<TransItem>): Long {
@@ -65,9 +86,10 @@ private fun readEnv(testCase: String): Env {
         trans.add(transItem)
     }
 
-    return Env(seeds = seeds, trans = trans)
+    val seedsV2 = seeds.chunked(2).map { Pair(it[0], it[1]) }
+    return Env(seeds = seeds, seedsV2 = seedsV2, trans = trans)
 }
 
-private data class Env(val seeds: List<Long>, val trans: List<List<TransItem>>)
+private data class Env(val seeds: List<Long>, val seedsV2: List<Pair<Long, Long>>, val trans: List<List<TransItem>>)
 
 private data class TransItem(val dst: Long, val src: Long, val len: Long)
