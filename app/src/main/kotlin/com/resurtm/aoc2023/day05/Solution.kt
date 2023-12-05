@@ -1,45 +1,73 @@
 package com.resurtm.aoc2023.day05
 
 fun launchDay05(testCase: String) {
-    val environment = readEnvironment(testCase)
-    println("$environment")
+    val env = readEnv(testCase)
+    var min: Long? = null
+    for (raw in env.seeds) {
+        var seed = raw
+        for (trans in env.trans) {
+            seed = doTrans(seed, trans)
+        }
+        if (min == null || min > seed) {
+            min = seed
+        }
+    }
+    println("Day 05, part 01: $min")
 }
 
-private fun readEnvironment(testCase: String): Environment {
+private fun doTrans(seed: Long, trans: List<TransItem>): Long {
+    for (tr in trans) {
+        if (seed in tr.src..<tr.src + tr.len) {
+            return seed + (tr.dst - tr.src)
+        }
+    }
+    return seed
+}
+
+private fun readEnv(testCase: String): Env {
     val rawReader = object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
     val reader = rawReader ?: throw Exception("Cannot read the input")
 
     val seeds = mutableListOf<Long>()
-    val transformations = mutableListOf<List<Transformation>>()
-    var transformation = mutableListOf<Transformation>()
+    val trans = mutableListOf<List<TransItem>>()
+
+    var transItem = mutableListOf<TransItem>()
     var readMap = false
 
     while (true) {
         val line = reader.readLine() ?: break
         if (readMap) {
             if (line.isEmpty()) {
-                transformations.add(transformation)
-                transformation = mutableListOf()
+                trans.add(transItem)
+                transItem = mutableListOf()
                 readMap = false
                 continue
             }
+
             val raw = line.split(" ").map { it.trim() }.filter { it.isNotEmpty() }.map { it.toLong() }
-            transformation.add(Transformation(dst = raw[0], src = raw[1], len = raw[2]))
+            transItem.add(TransItem(dst = raw[0], src = raw[1], len = raw[2]))
+            continue
         }
+
         if (line.contains("seeds: ")) {
             seeds.addAll(line.split(":")[1].trim().split(" ").map { it.trim() }.filter { it.isNotEmpty() }
                 .map { it.toLong() })
             continue
         }
+
         if (line.contains(" map:")) {
             readMap = true
             continue
         }
     }
 
-    return Environment(seeds = seeds, transformations = transformations)
+    if (transItem.isNotEmpty()) {
+        trans.add(transItem)
+    }
+
+    return Env(seeds = seeds, trans = trans)
 }
 
-private data class Environment(val seeds: List<Long>, val transformations: List<List<Transformation>>)
+private data class Env(val seeds: List<Long>, val trans: List<List<TransItem>>)
 
-private data class Transformation(val dst: Long, val src: Long, val len: Long)
+private data class TransItem(val dst: Long, val src: Long, val len: Long)
