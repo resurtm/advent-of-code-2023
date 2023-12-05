@@ -9,7 +9,7 @@ fun launchDay05(testCase: String) {
 private fun solvePart2(env: Env): Long? {
     var min: Long? = null
     for (rawPair in env.seedsV2) {
-        for (raw in rawPair.first..rawPair.first + rawPair.second) {
+        for (raw in rawPair.first..<rawPair.first + rawPair.second) {
             var seed = raw
             for (trans in env.trans) {
                 seed = doTrans(seed, trans)
