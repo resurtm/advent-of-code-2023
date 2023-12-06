@@ -1,6 +1,6 @@
 package com.resurtm.aoc2023.day03
 
-typealias GearPos = Pair<Int, Int>
+private typealias GearPos = Pair<Int, Int>
 
 fun launchDay03(testCase: String) {
     val grid = buildGrid(testCase)

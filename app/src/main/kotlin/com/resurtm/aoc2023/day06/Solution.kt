@@ -38,4 +38,4 @@ private fun readInputData(testCase: String): InputData {
 private fun prepLine(line: String): List<Long> =
     line.split(":")[1].trim().split(" ").map { it.trim() }.filter { it.isNotEmpty() }.map { it.toLong() }
 
-typealias InputData = List<Pair<Long, Long>>
+private typealias InputData = List<Pair<Long, Long>>
