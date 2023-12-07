@@ -4,8 +4,8 @@ fun launchDay07(testCase: String) {
     val ex = Exception("Cannot read the input")
     val rawReader = object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
     val reader = rawReader ?: throw ex
-    val result = mutableListOf<Hand>()
 
+    val result = mutableListOf<Hand>()
     main@ while (true) {
         val line = reader.readLine() ?: break
         val temp = line.split(' ')
@@ -23,8 +23,8 @@ fun launchDay07(testCase: String) {
         }
         result.add(hand)
     }
-
-    result.forEach { println("$it") }
+    val part1 = result.foldIndexed(0) { index, acc, hand -> acc + (index + 1) * hand.score }
+    println("Day 07, part 1: $part1")
 }
 
 private data class Hand(
@@ -35,8 +35,16 @@ private data class Hand(
     }
 
     override fun compareTo(other: Hand): Int {
-        if (this.assessment.prio > other.assessment.prio) return 1
-        return -1
+        if (this.assessment.prio == other.assessment.prio) {
+            for (idx in 0..<this.cards.length) {
+                val a = lookup[this.cards[idx]]
+                val b = lookup[other.cards[idx]]
+                if (a != null && b != null && a > b) return 1
+                if (a != null && b != null && a < b) return -1
+            }
+            return 0
+        }
+        return if (this.assessment.prio > other.assessment.prio) 1 else -1
     }
 
     private fun assess(): Assessment {
