@@ -2,16 +2,12 @@ package com.resurtm.aoc2023.day08
 
 fun launchDay08(testCase: String) {
     val input = readInput(testCase)
-    println("Day 08, part 1: ${solvePart1(input)}")
-    println("Day 08, part 2: ${solvePart2(input)}")
+    println("Day 08, part 1: ${calculate(input)}")
+    println("Day 08, part 2: ${calculateV2(input)}")
 }
 
-private fun solvePart1(inp: Input): Long = calculate(inp)
-
-private fun solvePart2(inp: Input): Long {
-    val result = inp.points.keys.filter { it.last() == 'A' }.map { calculate(inp, start = it, end = "Z") }
-    return findListLCM(result)
-}
+private fun calculateV2(inp: Input): Long =
+    findListLCM(inp.points.keys.filter { it.last() == 'A' }.map { calculate(inp, start = it, end = "Z") })
 
 private fun calculate(inp: Input, start: String = "AAA", end: String = "ZZZ"): Long {
     var currTurn = 0
@@ -21,11 +17,9 @@ private fun calculate(inp: Input, start: String = "AAA", end: String = "ZZZ"): L
     do {
         if (currTurn == inp.turns.length) currTurn = 0
 
-        val nextPoint = inp.points[point]
-        if (nextPoint != null) {
-            if (inp.turns[currTurn] == 'L') point = nextPoint.first
-            else if (inp.turns[currTurn] == 'R') point = nextPoint.second
-        }
+        val nextPoint = inp.points[point] ?: continue
+        if (inp.turns[currTurn] == 'L') point = nextPoint.first
+        else if (inp.turns[currTurn] == 'R') point = nextPoint.second
 
         currTurn++
         steps++
@@ -59,10 +53,10 @@ private fun readInput(testCase: String): Input {
 
 private data class Input(val turns: String, val points: MutableMap<String, Pair<String, String>>)
 
-private fun findListLCM(numbers: List<Long>): Long {
-    var result = numbers[0]
-    for (i in 1 until numbers.size) {
-        result = findItemLCM(result, numbers[i])
+private fun findListLCM(items: List<Long>): Long {
+    var result = items[0]
+    for (i in 1 until items.size) {
+        result = findItemLCM(result, items[i])
     }
     return result
 }
