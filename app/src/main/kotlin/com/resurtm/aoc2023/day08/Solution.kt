@@ -5,7 +5,7 @@ fun launchDay08(testCase: String) {
     val rawReader = object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
     val reader = rawReader ?: throw ex
 
-    val path = reader.readLine() ?: throw ex
+    val turns = reader.readLine() ?: throw ex
     val points = mutableMapOf<String, Pair<String, String>>()
 
     while (true) {
@@ -20,8 +20,21 @@ fun launchDay08(testCase: String) {
         points[key] = value
     }
 
-    for (dir in path) {
-        println(dir)
-    }
-    println(points)
+    var currTurn = 0
+    var steps = 0
+    var point = "AAA"
+
+    do {
+        if (currTurn == turns.length) currTurn = 0
+        val nextPoint = points[point]
+        if (nextPoint != null) {
+            if (turns[currTurn] == 'L') point = nextPoint.first
+            else if (turns[currTurn] == 'R') point = nextPoint.second
+        }
+
+        currTurn++
+        steps++
+    } while (point != "ZZZ")
+
+    println("Day 08, part 1: $steps")
 }
