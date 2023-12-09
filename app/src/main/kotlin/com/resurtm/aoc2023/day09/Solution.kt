@@ -4,15 +4,12 @@ fun launchDay09(testCase: String) {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Cannot read the input")
-    var res1 = 0
-    var res2 = 0
+    var res = Pair(0, 0)
     while (true) {
-        val res = parseLine(reader.readLine() ?: break)
-        res1 += res.first
-        res2 += res.second
+        val out = parseLine(reader.readLine() ?: break)
+        res = Pair(res.first + out.first, res.second + out.second)
     }
-    println("Day 09, part 1: $res1")
-    println("Day 09, part 2: $res2")
+    println("Day 09: $res")
 }
 
 private fun parseLine(line: String): Pair<Int, Int> {
