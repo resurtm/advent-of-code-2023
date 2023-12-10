@@ -1,57 +1,38 @@
 package com.resurtm.aoc2023.day10
 
-import kotlin.math.abs
-
 fun launchDay10(testCase: String) {
     val env = readEnv(testCase)
     ensureStart(env)
     println("Day 10, part 1: ${calcPart1(env)}")
-    // println("Day 10, part 2: ${calcPart2(env)}")
-    println("Day 10, part 2: ${calcPart2V2(env)}")
+    println("Day 10, part 2: ${calcPart2(env)}")
 }
 
-private fun calcPart2V2(env: Env): Int {
-    val walked = calcWalkedSet(env)
-    val marked = mutableSetOf<Pos>()
+private fun calcPart2(env: Env): Int {
+    cleanDebris(env)
 
+    val hist: HistV2 = mutableListOf(env.pos)
+    var pos = findStarts(env).first
+    val end = findStarts(env).second
+
+    while (hist.last() != end) {
+        hist.add(pos)
+        pos = walk(pos, hist.toMutableSet(), env.grid)
+
+        println(findDirection(pos, hist, env.grid))
+    }
+
+    return 0
+}
+
+private fun cleanDebris(env: Env) {
+    val walked = calcWalkedSet(env)
     for (row in 0..<env.grid.size) {
         for (col in 0..<env.grid.first().size) {
             val pos = Pos(row, col)
             if (pos in walked) continue
-
-            val markedAddition = mutableSetOf<Pos>()
-            if (emit(pos, markedAddition, walked, env.grid))
-                marked.addAll(markedAddition)
+            env.grid[row][col] = Pipe.BLANK
         }
     }
-
-    println(marked)
-
-    return marked.size
-}
-
-private fun emit(pos: Pos, accum: MutableSet<Pos>, walked: Set<Pos>, grid: Grid): Boolean {
-    if (pos.row <= -1 || pos.col <= -1 || pos.row >= grid.size || pos.col >= grid.first().size) {
-        accum.clear()
-        return false
-    }
-
-    if (pos in walked || pos in accum) {
-        return true
-    }
-    accum.add(pos)
-
-    val north = pos.copy(row = pos.row - 1)
-    val south = pos.copy(row = pos.row + 1)
-    val west = pos.copy(col = pos.col - 1)
-    val east = pos.copy(col = pos.col + 1)
-
-    if (!emit(north, accum, walked, grid)) return false
-    if (!emit(south, accum, walked, grid)) return false
-    if (!emit(west, accum, walked, grid)) return false
-    if (!emit(east, accum, walked, grid)) return false
-
-    return true
 }
 
 private fun calcWalkedSet(env: Env): Set<Pos> {
@@ -66,97 +47,6 @@ private fun calcWalkedSet(env: Env): Set<Pos> {
         )
     } while (hist.first.intersect(hist.second).size == 1)
     return hist.first + hist.second
-}
-
-private fun calcPart2(env: Env): Int {
-    val hist: HistV2 = mutableListOf(env.pos)
-    var pos = findStarts(env).first
-    val marked = mutableSetOf<Pos>()
-
-    var step = 0
-    do {
-        for (item in hist) if (isClose(item, pos) && item != pos && item != hist.last()) {
-            val emitStart = findEmitStart(pos, findDirection(pos, hist, env.grid), hist)
-            if (emitStart != null) {
-                // println("emit - emit:$emitStart - pos:$pos")
-                val markedCurr = mutableSetOf<Pos>()
-                if (emit(
-                        emitStart,
-                        (hist + mutableListOf(pos)).toMutableList(),
-                        marked,
-                        markedCurr,
-                        env.grid,
-                        depth = 0
-                    )
-                ) {
-                    marked.addAll(markedCurr)
-                }
-                println(marked)
-            }
-        }
-
-        hist.add(pos)
-        pos = walk(pos, hist.toMutableSet(), env.grid)
-
-        step++
-    } while (/*++step < 460 && */!isClose(env.pos, pos))
-
-    return marked.size
-}
-
-private fun emit(
-    emitStart: Pos,
-    hist: HistV2,
-    markedAll: MutableSet<Pos>,
-    markedCurr: MutableSet<Pos>,
-    grid: Grid,
-    depth: Int
-): Boolean {
-    markedCurr.add(emitStart)
-
-    val north = emitStart.copy(row = emitStart.row - 1)
-    val south = emitStart.copy(row = emitStart.row + 1)
-    val west = emitStart.copy(col = emitStart.col - 1)
-    val east = emitStart.copy(col = emitStart.col + 1)
-
-    //println(markedCurr)
-    if (
-    /*depth > 4 ||*/
-        north.row < 0 || west.col < 0 || south.row > grid.size || east.col > grid.first().size
-    ) {
-        markedCurr.clear()
-        return false
-    }
-
-    var result = true
-    if (result && hist.indexOf(north) == -1 && north !in markedAll && north !in markedCurr)
-        result = emit(north, hist, markedAll, markedCurr, grid, depth + 1) && result
-    if (result && hist.indexOf(south) == -1 && south !in markedAll && south !in markedCurr)
-        result = emit(south, hist, markedAll, markedCurr, grid, depth + 1) && result
-    if (result && hist.indexOf(west) == -1 && west !in markedAll && west !in markedCurr)
-        result = emit(west, hist, markedAll, markedCurr, grid, depth + 1) && result
-    if (result && hist.indexOf(east) == -1 && east !in markedAll && east !in markedCurr)
-        result = emit(east, hist, markedAll, markedCurr, grid, depth + 1) && result
-    return result
-}
-
-private fun findEmitStart(pos: Pos, direction: Direction, hist: HistV2): Pos? {
-    val emitStart1 = when (direction) {
-        Direction.NORTH -> pos.copy(col = pos.col - 1)
-        Direction.SOUTH -> pos.copy(col = pos.col + 1)
-        Direction.WEST -> pos.copy(row = pos.row + 1)
-        Direction.EAST -> pos.copy(row = pos.row - 1)
-    }
-    val emitStart2 = when (direction) {
-        Direction.NORTH -> pos.copy(row = pos.row + 1, col = pos.col - 1)
-        Direction.SOUTH -> pos.copy(row = pos.row - 1, col = pos.col + 1)
-        Direction.WEST -> pos.copy(row = pos.row + 1, col = pos.col + 1)
-        Direction.EAST -> pos.copy(row = pos.row - 1, col = pos.col - 1)
-    }
-
-    if (hist.indexOf(emitStart1) == -1) return emitStart1
-    if (hist.indexOf(emitStart2) == -1) return emitStart2
-    return null
 }
 
 private fun calcPart1(env: Env): Int {
@@ -174,7 +64,7 @@ private fun calcPart1(env: Env): Int {
         )
 
         step++
-    } while (/*++step < 10 && */hist.first.intersect(hist.second).size == 1)
+    } while (hist.first.intersect(hist.second).size == 1)
 
     return step
 }
@@ -194,12 +84,6 @@ private fun findDirection(p: Pos, h: HistV2, g: Grid): Direction {
     if (p.copy(col = p.col + 1) == prev)
         return Direction.WEST
     throw Exception("Invalid state, cannot find a direction")
-}
-
-private fun isClose(a: Pos, b: Pos): Boolean {
-    /*if (a.row == b.row) return abs(a.col - b.col) <= 1
-    if (a.col == b.col) return abs(a.row - b.row) <= 1*/
-    return abs(a.col - b.col) + abs(a.row - b.row) <= 1
 }
 
 private fun walk(p: Pos, h: Hist, g: Grid): Pos {
