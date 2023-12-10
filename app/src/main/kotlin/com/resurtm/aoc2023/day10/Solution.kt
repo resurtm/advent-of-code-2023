@@ -1,6 +1,16 @@
 package com.resurtm.aoc2023.day10
 
 fun launchDay10(testCase: String) {
+    val grid = readInput(testCase)
+    for (row in grid) {
+        for (item in row) {
+            print("${item.v} ")
+        }
+        println()
+    }
+}
+
+private fun readInput(testCase: String): MutableList<MutableList<Pipe>> {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Cannot read the input")
@@ -9,12 +19,7 @@ fun launchDay10(testCase: String) {
         val rawLine = reader.readLine() ?: break
         grid.add(rawLine.map { Pipe.fromChar(it) }.toMutableList())
     }
-    for (row in grid) {
-        for (item in row) {
-            print("${item.v} ")
-        }
-        println()
-    }
+    return grid
 }
 
 private enum class Pipe(val v: Byte) {
