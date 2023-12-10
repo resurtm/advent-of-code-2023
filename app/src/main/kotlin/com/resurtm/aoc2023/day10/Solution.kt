@@ -14,11 +14,11 @@ fun launchDay10(testCase: String) {
 }
 
 private fun ensureStart(e: Env) {
-    val north = if (e.pos.row == 0) Pipe.BLANK else e.grid[e.pos.row][e.pos.col]
-    val south = if (e.pos.row == e.grid.size - 1) Pipe.BLANK else e.grid[e.pos.row][e.pos.col]
+    val north = if (e.pos.row == 0) Pipe.BLANK else e.grid[e.pos.row - 1][e.pos.col]
+    val south = if (e.pos.row == e.grid.size - 1) Pipe.BLANK else e.grid[e.pos.row + 1][e.pos.col]
 
-    val west = if (e.pos.col == 0) Pipe.BLANK else e.grid[e.pos.row][e.pos.col]
-    val east = if (e.pos.col == e.grid[0].size) Pipe.BLANK else e.grid[e.pos.row][e.pos.col]
+    val west = if (e.pos.col == 0) Pipe.BLANK else e.grid[e.pos.row][e.pos.col - 1]
+    val east = if (e.pos.col == e.grid[0].size) Pipe.BLANK else e.grid[e.pos.row][e.pos.col + 1]
 
     val newStart = ensureStartEx(north, south, west, east)
     e.grid[e.pos.row][e.pos.col] = newStart
