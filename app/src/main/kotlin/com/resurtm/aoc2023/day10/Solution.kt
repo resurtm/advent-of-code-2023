@@ -6,7 +6,66 @@ fun launchDay10(testCase: String) {
     val env = readEnv(testCase)
     ensureStart(env)
     println("Day 10, part 1: ${calcPart1(env)}")
-    println("Day 10, part 2: ${calcPart2(env)}")
+    // println("Day 10, part 2: ${calcPart2(env)}")
+    println("Day 10, part 2: ${calcPart2V2(env)}")
+}
+
+private fun calcPart2V2(env: Env): Int {
+    val walked = calcWalkedSet(env)
+    val marked = mutableSetOf<Pos>()
+
+    for (row in 0..<env.grid.size) {
+        for (col in 0..<env.grid.first().size) {
+            val pos = Pos(row, col)
+            if (pos in walked) continue
+
+            val markedAddition = mutableSetOf<Pos>()
+            if (emit(pos, markedAddition, walked, env.grid))
+                marked.addAll(markedAddition)
+        }
+    }
+
+    println(marked)
+
+    return marked.size
+}
+
+private fun emit(pos: Pos, accum: MutableSet<Pos>, walked: Set<Pos>, grid: Grid): Boolean {
+    if (pos.row <= -1 || pos.col <= -1 || pos.row >= grid.size || pos.col >= grid.first().size) {
+        accum.clear()
+        return false
+    }
+
+    if (pos in walked || pos in accum) {
+        return true
+    }
+    accum.add(pos)
+
+    val north = pos.copy(row = pos.row - 1)
+    val south = pos.copy(row = pos.row + 1)
+    val west = pos.copy(col = pos.col - 1)
+    val east = pos.copy(col = pos.col + 1)
+
+    if (!emit(north, accum, walked, grid)) return false
+    if (!emit(south, accum, walked, grid)) return false
+    if (!emit(west, accum, walked, grid)) return false
+    if (!emit(east, accum, walked, grid)) return false
+
+    return true
+}
+
+private fun calcWalkedSet(env: Env): Set<Pos> {
+    val hist = Pair(mutableSetOf(env.pos), mutableSetOf(env.pos))
+    var pos = findStarts(env)
+    do {
+        hist.first.add(pos.first)
+        hist.second.add(pos.second)
+        pos = Pair(
+            walk(pos.first, hist.first, env.grid),
+            walk(pos.second, hist.second, env.grid)
+        )
+    } while (hist.first.intersect(hist.second).size == 1)
+    return hist.first + hist.second
 }
 
 private fun calcPart2(env: Env): Int {
@@ -32,6 +91,7 @@ private fun calcPart2(env: Env): Int {
                 ) {
                     marked.addAll(markedCurr)
                 }
+                println(marked)
             }
         }
 
@@ -62,7 +122,7 @@ private fun emit(
     //println(markedCurr)
     if (
     /*depth > 4 ||*/
-        north.row < 0 || west.col < 0 || south.row >= grid.size || east.col >= grid.first().size
+        north.row < 0 || west.col < 0 || south.row > grid.size || east.col > grid.first().size
     ) {
         markedCurr.clear()
         return false
