@@ -20,46 +20,51 @@ fun launchDay10(testCase: String) {
         step++
     } while (/*++step < 10 && */hist.first.intersect(hist.second).size == 1)
 
-    println(step)
+    println("Day 10, part 1: $step")
 }
 
 private fun walk(p: Pos, h: Hist, grid: Grid): Pos {
     val d = grid[p.row][p.col]
 
-    if (d == Pipe.WEST_EAST) {
-        val p1 = p.copy(col = p.col - 1)
-        val p2 = p.copy(col = p.col + 1)
-        return if (p1 in h) p2 else p1
-    }
-    if (d == Pipe.NORTH_SOUTH) {
-        val p1 = p.copy(row = p.row - 1)
-        val p2 = p.copy(row = p.row + 1)
-        return if (p1 in h) p2 else p1
-    }
+    return when (d) {
+        Pipe.WEST_EAST -> {
+            val p1 = p.copy(col = p.col - 1)
+            val p2 = p.copy(col = p.col + 1)
+            if (p1 in h) p2 else p1
+        }
 
-    if (d == Pipe.NORTH_WEST) {
-        val p1 = p.copy(row = p.row - 1)
-        val p2 = p.copy(col = p.col - 1)
-        return if (p1 in h) p2 else p1
-    }
-    if (d == Pipe.SOUTH_WEST) {
-        val p1 = p.copy(row = p.row + 1)
-        val p2 = p.copy(col = p.col - 1)
-        return if (p1 in h) p2 else p1
-    }
+        Pipe.NORTH_SOUTH -> {
+            val p1 = p.copy(row = p.row - 1)
+            val p2 = p.copy(row = p.row + 1)
+            if (p1 in h) p2 else p1
+        }
 
-    if (d == Pipe.NORTH_EAST) {
-        val p1 = p.copy(row = p.row - 1)
-        val p2 = p.copy(col = p.col + 1)
-        return if (p1 in h) p2 else p1
-    }
-    if (d == Pipe.SOUTH_EAST) {
-        val p1 = p.copy(row = p.row + 1)
-        val p2 = p.copy(col = p.col + 1)
-        return if (p1 in h) p2 else p1
-    }
+        Pipe.NORTH_WEST -> {
+            val p1 = p.copy(row = p.row - 1)
+            val p2 = p.copy(col = p.col - 1)
+            if (p1 in h) p2 else p1
+        }
 
-    throw Exception("Invalid state, cannot progress/walk a position")
+        Pipe.SOUTH_WEST -> {
+            val p1 = p.copy(row = p.row + 1)
+            val p2 = p.copy(col = p.col - 1)
+            if (p1 in h) p2 else p1
+        }
+
+        Pipe.NORTH_EAST -> {
+            val p1 = p.copy(row = p.row - 1)
+            val p2 = p.copy(col = p.col + 1)
+            if (p1 in h) p2 else p1
+        }
+
+        Pipe.SOUTH_EAST -> {
+            val p1 = p.copy(row = p.row + 1)
+            val p2 = p.copy(col = p.col + 1)
+            if (p1 in h) p2 else p1
+        }
+
+        else -> throw Exception("Invalid state, cannot progress/walk a position")
+    }
 }
 
 private fun findStarts(e: Env): Pair<Pos, Pos> {
@@ -67,7 +72,7 @@ private fun findStarts(e: Env): Pair<Pos, Pos> {
     val d = e.grid[p.row][p.col]
 
     if (d == Pipe.WEST_EAST) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
-    if (d == Pipe.NORTH_SOUTH) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
+    if (d == Pipe.NORTH_SOUTH) return Pair(p.copy(row = p.row - 1), p.copy(row = p.row + 1))
 
     if (d == Pipe.NORTH_WEST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col - 1))
     if (d == Pipe.SOUTH_WEST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col - 1))
