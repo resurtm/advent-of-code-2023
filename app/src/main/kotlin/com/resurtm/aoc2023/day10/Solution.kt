@@ -1,9 +1,33 @@
 package com.resurtm.aoc2023.day10
 
+import kotlin.math.abs
+
 fun launchDay10(testCase: String) {
     val env = readEnv(testCase)
     ensureStart(env)
+    println("Day 10, part 1: ${calcPart1(env)}")
+    println("Day 10, part 2: ${calcPart2(env)}")
+}
 
+private fun calcPart2(env: Env): Int {
+    val hist: HistV2 = mutableListOf(env.pos)
+    var pos = findStarts(env).first
+
+    var step = 0
+    do {
+        println("=========")
+        for (item in hist) if (isClose(item, pos) && item != pos && item != hist.last()) println(pos)
+
+        hist.add(pos)
+        pos = walk(pos, hist.toMutableSet(), env.grid)
+
+        step++
+    } while (/*++step < 460 && */!isClose(env.pos, pos))
+
+    return 0
+}
+
+private fun calcPart1(env: Env): Int {
     val hist = Pair(mutableSetOf(env.pos), mutableSetOf(env.pos))
     var pos = findStarts(env)
 
@@ -20,11 +44,34 @@ fun launchDay10(testCase: String) {
         step++
     } while (/*++step < 10 && */hist.first.intersect(hist.second).size == 1)
 
-    println("Day 10, part 1: $step")
+    return step
 }
 
-private fun walk(p: Pos, h: Hist, grid: Grid): Pos {
-    val d = grid[p.row][p.col]
+private fun findDirection(p: Pos, h: HistV2, g: Grid): Direction {
+    val prev = h.last()
+    if (g[p.row][p.col] == Pipe.NORTH_SOUTH)
+        return if (p.copy(row = p.row - 1) == prev) Direction.SOUTH else Direction.NORTH
+    if (g[p.row][p.col] == Pipe.WEST_EAST)
+        return if (p.copy(col = p.col - 1) == prev) Direction.EAST else Direction.WEST
+    if (p.copy(row = p.row - 1) == prev)
+        return Direction.SOUTH
+    if (p.copy(row = p.row + 1) == prev)
+        return Direction.NORTH
+    if (p.copy(col = p.col - 1) == prev)
+        return Direction.EAST
+    if (p.copy(col = p.col + 1) == prev)
+        return Direction.WEST
+    throw Exception("Invalid state, cannot find a direction")
+}
+
+private fun isClose(a: Pos, b: Pos): Boolean {
+    /*if (a.row == b.row) return abs(a.col - b.col) <= 1
+    if (a.col == b.col) return abs(a.row - b.row) <= 1*/
+    return abs(a.col - b.col) + abs(a.row - b.row) <= 1
+}
+
+private fun walk(p: Pos, h: Hist, g: Grid): Pos {
+    val d = g[p.row][p.col]
 
     return when (d) {
         Pipe.WEST_EAST -> {
@@ -147,6 +194,13 @@ private enum class Pipe(val v: Byte) {
     }
 }
 
+private enum class Direction {
+    NORTH,
+    SOUTH,
+    WEST,
+    EAST;
+}
+
 private data class Pos(val row: Int = 0, val col: Int = 0)
 
 private data class Env(val grid: Grid = mutableListOf(), var pos: Pos = Pos())
@@ -154,3 +208,5 @@ private data class Env(val grid: Grid = mutableListOf(), var pos: Pos = Pos())
 private typealias Grid = MutableList<MutableList<Pipe>>
 
 private typealias Hist = MutableSet<Pos>
+
+private typealias HistV2 = MutableList<Pos>
