@@ -8,31 +8,41 @@ fun launchDay10(testCase: String) {
 }
 
 private fun calcPart2(env: Env): Int {
-    cleanDebris(env)
-
-    val hist: HistV2 = mutableListOf(env.pos)
-    var pos = findStarts(env).first
-    val end = findStarts(env).second
-
-    while (hist.last() != end) {
-        hist.add(pos)
-        pos = walk(pos, hist.toMutableSet(), env.grid)
-
-        println(findDirection(pos, hist, env.grid))
+    val flood = cleanDebris(env)
+    for (row in 0..<env.grid.size) {
+        var fill = false
+        for (col in 0..<env.grid.first().size) {
+            val x = env.grid[row][col].x
+            if (x == '-') {
+                continue
+            }
+            if (x == '.' && fill) {
+                flood[row][col] = true
+                continue
+            }
+            if (x == '|' || x == 'F' || x == '7') {
+                fill = !fill
+                continue
+            }
+        }
     }
-
-    return 0
+    return flood.fold(0) { acc, row -> acc + row.filter { it }.size }
 }
 
-private fun cleanDebris(env: Env) {
+private fun cleanDebris(env: Env): MutableList<MutableList<Boolean>> {
     val walked = calcWalkedSet(env)
+    val flood = mutableListOf<MutableList<Boolean>>()
     for (row in 0..<env.grid.size) {
+        val items = mutableListOf<Boolean>()
         for (col in 0..<env.grid.first().size) {
+            items.add(false)
             val pos = Pos(row, col)
             if (pos in walked) continue
             env.grid[row][col] = Pipe.BLANK
         }
+        flood.add(items)
     }
+    return flood
 }
 
 private fun calcWalkedSet(env: Env): Set<Pos> {
@@ -67,23 +77,6 @@ private fun calcPart1(env: Env): Int {
     } while (hist.first.intersect(hist.second).size == 1)
 
     return step
-}
-
-private fun findDirection(p: Pos, h: HistV2, g: Grid): Direction {
-    val prev = h.last()
-    if (g[p.row][p.col] == Pipe.NORTH_SOUTH)
-        return if (p.copy(row = p.row - 1) == prev) Direction.SOUTH else Direction.NORTH
-    if (g[p.row][p.col] == Pipe.WEST_EAST)
-        return if (p.copy(col = p.col - 1) == prev) Direction.EAST else Direction.WEST
-    if (p.copy(row = p.row - 1) == prev)
-        return Direction.SOUTH
-    if (p.copy(row = p.row + 1) == prev)
-        return Direction.NORTH
-    if (p.copy(col = p.col - 1) == prev)
-        return Direction.EAST
-    if (p.copy(col = p.col + 1) == prev)
-        return Direction.WEST
-    throw Exception("Invalid state, cannot find a direction")
 }
 
 private fun walk(p: Pos, h: Hist, g: Grid): Pos {
@@ -193,28 +186,21 @@ private fun readEnv(testCase: String): Env {
     return result
 }
 
-private enum class Pipe(val v: Byte) {
-    NORTH_SOUTH('|'.code.toByte()), // 124
-    WEST_EAST('-'.code.toByte()), // 45
-    NORTH_EAST('L'.code.toByte()), // 76
-    NORTH_WEST('J'.code.toByte()), // 74
-    SOUTH_WEST('7'.code.toByte()), // 55
-    SOUTH_EAST('F'.code.toByte()), // 70
-    BLANK('.'.code.toByte()), // 46
-    START('S'.code.toByte()); // 83
+private enum class Pipe(val v: Byte, val x: Char) {
+    NORTH_SOUTH('|'.code.toByte(), '|'), // 124
+    WEST_EAST('-'.code.toByte(), '-'), // 45
+    NORTH_EAST('L'.code.toByte(), 'L'), // 76
+    NORTH_WEST('J'.code.toByte(), 'J'), // 74
+    SOUTH_WEST('7'.code.toByte(), '7'), // 55
+    SOUTH_EAST('F'.code.toByte(), 'F'), // 70
+    BLANK('.'.code.toByte(), '.'), // 46
+    START('S'.code.toByte(), 'S'); // 83
 
     companion object {
         private val values = entries
         fun fromChar(v: Char) = values.firstOrNull { it.v == v.code.toByte() }
             ?: throw Exception("Invalid state, cannot parse a pipe")
     }
-}
-
-private enum class Direction {
-    NORTH,
-    SOUTH,
-    WEST,
-    EAST;
 }
 
 private data class Pos(val row: Int = 0, val col: Int = 0)
@@ -224,5 +210,3 @@ private data class Env(val grid: Grid = mutableListOf(), var pos: Pos = Pos())
 private typealias Grid = MutableList<MutableList<Pipe>>
 
 private typealias Hist = MutableSet<Pos>
-
-private typealias HistV2 = MutableList<Pos>
