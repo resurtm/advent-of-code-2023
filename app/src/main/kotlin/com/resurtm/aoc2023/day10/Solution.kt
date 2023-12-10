@@ -15,8 +15,14 @@ private fun calcPart2(env: Env): Int {
 
     var step = 0
     do {
-        println("=========")
-        for (item in hist) if (isClose(item, pos) && item != pos && item != hist.last()) println(pos)
+        for (item in hist)
+            if (isClose(item, pos) && item != pos && item != hist.last()) {
+                val emitStart = findEmitStart(pos, findDirection(pos, hist, env.grid), hist)
+                if (emitStart != null) {
+                    println("==========")
+                    println(emitStart)
+                }
+            }
 
         hist.add(pos)
         pos = walk(pos, hist.toMutableSet(), env.grid)
@@ -25,6 +31,25 @@ private fun calcPart2(env: Env): Int {
     } while (/*++step < 460 && */!isClose(env.pos, pos))
 
     return 0
+}
+
+private fun findEmitStart(pos: Pos, direction: Direction, hist: HistV2): Pos? {
+    val emitStart1 = when (direction) {
+        Direction.NORTH -> pos.copy(col = pos.col - 1)
+        Direction.SOUTH -> pos.copy(col = pos.col + 1)
+        Direction.WEST -> pos.copy(row = pos.row + 1)
+        Direction.EAST -> pos.copy(row = pos.row - 1)
+    }
+    val emitStart2 = when (direction) {
+        Direction.NORTH -> pos.copy(row = pos.row - 1, col = pos.col - 1)
+        Direction.SOUTH -> pos.copy(row = pos.row + 1, col = pos.col + 1)
+        Direction.WEST -> pos.copy(row = pos.row + 1, col = pos.col + 1)
+        Direction.EAST -> pos.copy(row = pos.row - 1, col = pos.col - 1)
+    }
+
+    if (hist.indexOf(emitStart1) == -1) return emitStart1
+    if (hist.indexOf(emitStart2) == -1) return emitStart2
+    return null
 }
 
 private fun calcPart1(env: Env): Int {
