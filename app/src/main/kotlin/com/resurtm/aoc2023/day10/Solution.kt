@@ -5,26 +5,75 @@ fun launchDay10(testCase: String) {
     ensureStart(env)
 
     val hist = Pair(mutableSetOf(env.pos), mutableSetOf(env.pos))
-    val pos = findStarts(env)
+    var pos = findStarts(env)
 
     var step = 0
     do {
-        println(step)
-    } while (++step < 3)
+        hist.first.add(pos.first)
+        hist.second.add(pos.second)
+
+        pos = Pair(
+            walk(pos.first, hist.first, env.grid),
+            walk(pos.second, hist.second, env.grid)
+        )
+
+        step++
+    } while (/*++step < 10 && */hist.first.intersect(hist.second).size == 1)
+
+    println(step)
+}
+
+private fun walk(p: Pos, h: Hist, grid: Grid): Pos {
+    val d = grid[p.row][p.col]
+
+    if (d == Pipe.WEST_EAST) {
+        val p1 = p.copy(col = p.col - 1)
+        val p2 = p.copy(col = p.col + 1)
+        return if (p1 in h) p2 else p1
+    }
+    if (d == Pipe.NORTH_SOUTH) {
+        val p1 = p.copy(row = p.row - 1)
+        val p2 = p.copy(row = p.row + 1)
+        return if (p1 in h) p2 else p1
+    }
+
+    if (d == Pipe.NORTH_WEST) {
+        val p1 = p.copy(row = p.row - 1)
+        val p2 = p.copy(col = p.col - 1)
+        return if (p1 in h) p2 else p1
+    }
+    if (d == Pipe.SOUTH_WEST) {
+        val p1 = p.copy(row = p.row + 1)
+        val p2 = p.copy(col = p.col - 1)
+        return if (p1 in h) p2 else p1
+    }
+
+    if (d == Pipe.NORTH_EAST) {
+        val p1 = p.copy(row = p.row - 1)
+        val p2 = p.copy(col = p.col + 1)
+        return if (p1 in h) p2 else p1
+    }
+    if (d == Pipe.SOUTH_EAST) {
+        val p1 = p.copy(row = p.row + 1)
+        val p2 = p.copy(col = p.col + 1)
+        return if (p1 in h) p2 else p1
+    }
+
+    throw Exception("Invalid state, cannot progress/walk a position")
 }
 
 private fun findStarts(e: Env): Pair<Pos, Pos> {
     val p = e.pos
-    val m = e.grid[p.row][p.col]
+    val d = e.grid[p.row][p.col]
 
-    if (m == Pipe.WEST_EAST) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
-    if (m == Pipe.NORTH_SOUTH) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
+    if (d == Pipe.WEST_EAST) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
+    if (d == Pipe.NORTH_SOUTH) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
 
-    if (m == Pipe.NORTH_WEST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col - 1))
-    if (m == Pipe.SOUTH_WEST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col - 1))
+    if (d == Pipe.NORTH_WEST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col - 1))
+    if (d == Pipe.SOUTH_WEST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col - 1))
 
-    if (m == Pipe.NORTH_EAST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col + 1))
-    if (m == Pipe.SOUTH_EAST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col + 1))
+    if (d == Pipe.NORTH_EAST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col + 1))
+    if (d == Pipe.SOUTH_EAST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col + 1))
 
     throw Exception("Invalid state, cannot find the pair of starts")
 }
@@ -98,3 +147,5 @@ private data class Pos(val row: Int = 0, val col: Int = 0)
 private data class Env(val grid: Grid = mutableListOf(), var pos: Pos = Pos())
 
 private typealias Grid = MutableList<MutableList<Pipe>>
+
+private typealias Hist = MutableSet<Pos>
