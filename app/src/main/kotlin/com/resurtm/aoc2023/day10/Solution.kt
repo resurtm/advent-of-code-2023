@@ -4,13 +4,29 @@ fun launchDay10(testCase: String) {
     val env = readEnv(testCase)
     ensureStart(env)
 
-    println(env.pos)
-    for (row in env.grid) {
-        for (item in row) {
-            print("${item.v} ")
-        }
-        println()
-    }
+    val hist = Pair(mutableSetOf(env.pos), mutableSetOf(env.pos))
+    val pos = findStarts(env)
+
+    var step = 0
+    do {
+        println(step)
+    } while (++step < 3)
+}
+
+private fun findStarts(e: Env): Pair<Pos, Pos> {
+    val p = e.pos
+    val m = e.grid[p.row][p.col]
+
+    if (m == Pipe.WEST_EAST) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
+    if (m == Pipe.NORTH_SOUTH) return Pair(p.copy(col = p.col - 1), p.copy(col = p.col + 1))
+
+    if (m == Pipe.NORTH_WEST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col - 1))
+    if (m == Pipe.SOUTH_WEST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col - 1))
+
+    if (m == Pipe.NORTH_EAST) return Pair(p.copy(row = p.row - 1), p.copy(col = p.col + 1))
+    if (m == Pipe.SOUTH_EAST) return Pair(p.copy(row = p.row + 1), p.copy(col = p.col + 1))
+
+    throw Exception("Invalid state, cannot find the pair of starts")
 }
 
 private fun ensureStart(e: Env) {
@@ -20,8 +36,7 @@ private fun ensureStart(e: Env) {
     val west = if (e.pos.col == 0) Pipe.BLANK else e.grid[e.pos.row][e.pos.col - 1]
     val east = if (e.pos.col == e.grid[0].size) Pipe.BLANK else e.grid[e.pos.row][e.pos.col + 1]
 
-    val newStart = ensureStartEx(north, south, west, east)
-    e.grid[e.pos.row][e.pos.col] = newStart
+    e.grid[e.pos.row][e.pos.col] = ensureStartEx(north, south, west, east)
 }
 
 private fun ensureStartEx(north: Pipe, south: Pipe, west: Pipe, east: Pipe): Pipe {
@@ -40,13 +55,13 @@ private fun ensureStartEx(north: Pipe, south: Pipe, west: Pipe, east: Pipe): Pip
     if (s && w) return Pipe.SOUTH_WEST
     if (s && e) return Pipe.SOUTH_EAST
 
-    return Pipe.BLANK
+    throw Exception("Invalid state, cannot ensure the start")
 }
 
 private fun readEnv(testCase: String): Env {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
-            ?: throw Exception("Cannot read the input")
+            ?: throw Exception("Invalid state, cannot read the input")
     val result = Env(pos = Pos(-1, -1))
     var row = 0
     while (true) {
@@ -73,7 +88,8 @@ private enum class Pipe(val v: Byte) {
 
     companion object {
         private val values = entries
-        fun fromChar(v: Char) = values.firstOrNull { it.v == v.code.toByte() } ?: BLANK
+        fun fromChar(v: Char) = values.firstOrNull { it.v == v.code.toByte() }
+            ?: throw Exception("Invalid state, cannot parse a pipe")
     }
 }
 
