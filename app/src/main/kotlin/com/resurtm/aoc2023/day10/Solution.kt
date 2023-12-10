@@ -1,8 +1,9 @@
 package com.resurtm.aoc2023.day10
 
 fun launchDay10(testCase: String) {
-    val grid = readInput(testCase)
-    for (row in grid) {
+    val input = readInput(testCase)
+    println(input.pos)
+    for (row in input.grid) {
         for (item in row) {
             print("${item.v} ")
         }
@@ -10,16 +11,22 @@ fun launchDay10(testCase: String) {
     }
 }
 
-private fun readInput(testCase: String): MutableList<MutableList<Pipe>> {
+private fun readInput(testCase: String): Input {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Cannot read the input")
-    val grid = mutableListOf<MutableList<Pipe>>()
+    val result = Input(pos = Pos(-1, -1))
+    var row = 0
     while (true) {
         val rawLine = reader.readLine() ?: break
-        grid.add(rawLine.map { Pipe.fromChar(it) }.toMutableList())
+        result.grid.add(rawLine.mapIndexed { col, it ->
+            val pipe = Pipe.fromChar(it)
+            if (pipe == Pipe.START) result.pos = Pos(row, col)
+            pipe
+        }.toMutableList())
+        row++
     }
-    return grid
+    return result
 }
 
 private enum class Pipe(val v: Byte) {
@@ -37,3 +44,9 @@ private enum class Pipe(val v: Byte) {
         fun fromChar(v: Char) = values.firstOrNull { it.v == v.code.toByte() } ?: BLANK
     }
 }
+
+private data class Pos(val row: Int = 0, val col: Int = 0)
+
+private data class Input(val grid: Grid = mutableListOf(), var pos: Pos = Pos())
+
+private typealias Grid = MutableList<MutableList<Pipe>>
