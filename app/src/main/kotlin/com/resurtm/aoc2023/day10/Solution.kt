@@ -12,17 +12,28 @@ fun launchDay10(testCase: String) {
 private fun calcPart2(env: Env): Int {
     val hist: HistV2 = mutableListOf(env.pos)
     var pos = findStarts(env).first
+    val marked = mutableSetOf<Pos>()
 
     var step = 0
     do {
-        for (item in hist)
-            if (isClose(item, pos) && item != pos && item != hist.last()) {
-                val emitStart = findEmitStart(pos, findDirection(pos, hist, env.grid), hist)
-                if (emitStart != null) {
-                    println("==========")
-                    println(emitStart)
+        for (item in hist) if (isClose(item, pos) && item != pos && item != hist.last()) {
+            val emitStart = findEmitStart(pos, findDirection(pos, hist, env.grid), hist)
+            if (emitStart != null) {
+                // println("emit - emit:$emitStart - pos:$pos")
+                val markedCurr = mutableSetOf<Pos>()
+                if (emit(
+                        emitStart,
+                        (hist + mutableListOf(pos)).toMutableList(),
+                        marked,
+                        markedCurr,
+                        env.grid,
+                        depth = 0
+                    )
+                ) {
+                    marked.addAll(markedCurr)
                 }
             }
+        }
 
         hist.add(pos)
         pos = walk(pos, hist.toMutableSet(), env.grid)
@@ -30,7 +41,43 @@ private fun calcPart2(env: Env): Int {
         step++
     } while (/*++step < 460 && */!isClose(env.pos, pos))
 
-    return 0
+    return marked.size
+}
+
+private fun emit(
+    emitStart: Pos,
+    hist: HistV2,
+    markedAll: MutableSet<Pos>,
+    markedCurr: MutableSet<Pos>,
+    grid: Grid,
+    depth: Int
+): Boolean {
+    markedCurr.add(emitStart)
+
+    val north = emitStart.copy(row = emitStart.row - 1)
+    val south = emitStart.copy(row = emitStart.row + 1)
+    val west = emitStart.copy(col = emitStart.col - 1)
+    val east = emitStart.copy(col = emitStart.col + 1)
+
+    //println(markedCurr)
+    if (
+    /*depth > 4 ||*/
+        north.row < 0 || west.col < 0 || south.row >= grid.size || east.col >= grid.first().size
+    ) {
+        markedCurr.clear()
+        return false
+    }
+
+    var result = true
+    if (result && hist.indexOf(north) == -1 && north !in markedAll && north !in markedCurr)
+        result = emit(north, hist, markedAll, markedCurr, grid, depth + 1) && result
+    if (result && hist.indexOf(south) == -1 && south !in markedAll && south !in markedCurr)
+        result = emit(south, hist, markedAll, markedCurr, grid, depth + 1) && result
+    if (result && hist.indexOf(west) == -1 && west !in markedAll && west !in markedCurr)
+        result = emit(west, hist, markedAll, markedCurr, grid, depth + 1) && result
+    if (result && hist.indexOf(east) == -1 && east !in markedAll && east !in markedCurr)
+        result = emit(east, hist, markedAll, markedCurr, grid, depth + 1) && result
+    return result
 }
 
 private fun findEmitStart(pos: Pos, direction: Direction, hist: HistV2): Pos? {
@@ -41,8 +88,8 @@ private fun findEmitStart(pos: Pos, direction: Direction, hist: HistV2): Pos? {
         Direction.EAST -> pos.copy(row = pos.row - 1)
     }
     val emitStart2 = when (direction) {
-        Direction.NORTH -> pos.copy(row = pos.row - 1, col = pos.col - 1)
-        Direction.SOUTH -> pos.copy(row = pos.row + 1, col = pos.col + 1)
+        Direction.NORTH -> pos.copy(row = pos.row + 1, col = pos.col - 1)
+        Direction.SOUTH -> pos.copy(row = pos.row - 1, col = pos.col + 1)
         Direction.WEST -> pos.copy(row = pos.row + 1, col = pos.col + 1)
         Direction.EAST -> pos.copy(row = pos.row - 1, col = pos.col - 1)
     }
