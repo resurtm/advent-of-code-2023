@@ -1,11 +1,31 @@
 package com.resurtm.aoc2023.day11
 
+import kotlin.math.abs
+
 fun launchDay11(testCase: String) {
     val stars = readStars(testCase)
     printStars(stars)
     expandRowsSpace(stars)
     expandColsSpace(stars)
     printStars(stars)
+    println(calcVerticalDists(stars))
+}
+
+private fun calcVerticalDists(stars: Stars): MutableMap<Pair<Int, Int>, Int> {
+    val seen = mutableMapOf<Int, Int>()
+    val dists = mutableMapOf<Pair<Int, Int>, Int>()
+    stars.forEach {
+        it.forEachIndexed { pos, star ->
+            if (star != -1) {
+                seen.forEach { (otherStar, otherPos) ->
+                    dists[Pair(star, otherStar)] = abs(pos - otherPos)
+                    dists[Pair(otherStar, star)] = abs(pos - otherPos)
+                }
+                seen[star] = pos
+            }
+        }
+    }
+    return dists
 }
 
 private fun expandRowsSpace(stars: Stars) {
