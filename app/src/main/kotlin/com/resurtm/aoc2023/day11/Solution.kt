@@ -1,33 +1,65 @@
 package com.resurtm.aoc2023.day11
 
 fun launchDay11(testCase: String) {
-    val input = readInput(testCase)
-    printStars(input.stars)
+    val stars = readStars(testCase)
+    printStars(stars)
+    expandRowsSpace(stars)
+    expandColsSpace(stars)
+    printStars(stars)
 }
 
+private fun expandRowsSpace(stars: Stars) {
+    var row = 0
+    do {
+        if (!hasStars(stars[row])) {
+            repeat(1) {
+                stars.add(row, MutableList(stars[row].size) { -1 })
+                row++
+            }
+        }
+        row++
+    } while (row < stars.size)
+}
+
+private fun expandColsSpace(stars: Stars) {
+    var col = 0
+    do {
+        val items = mutableListOf<Int>()
+        stars.forEach { items.add(it[col]) }
+        if (!hasStars(items)) {
+            repeat(1) {
+                stars.forEach { it.add(col, -1) }
+                col++
+            }
+        }
+        col++
+    } while (col < stars.first().size)
+}
+
+private fun hasStars(items: MutableList<Int>): Boolean = items.find { it != -1 } != null
+
 private fun printStars(stars: Stars) {
+    println("=====")
     stars.forEach { row ->
         row.forEach { print(if (it == -1) '.' else '#') }
         println()
     }
 }
 
-private fun readInput(testCase: String): Input {
+private fun readStars(testCase: String): Stars {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Invalid state, cannot read the input")
     var starIndex = 0
-    val stars = mutableListOf<List<Int>>()
+    val stars = mutableListOf<MutableList<Int>>()
     while (true) {
         val rawLine = reader.readLine() ?: break
         val row = rawLine.map {
             if (it == '#') starIndex++ else -1
         }
-        stars.add(row)
+        stars.add(row.toMutableList())
     }
-    return Input(stars)
+    return stars
 }
 
-private data class Input(var stars: Stars = listOf())
-
-private typealias Stars = List<List<Int>>
+private typealias Stars = MutableList<MutableList<Int>>
