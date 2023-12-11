@@ -3,6 +3,65 @@ package com.resurtm.aoc2023.day11
 import kotlin.math.abs
 
 fun launchDay11(testCase: String) {
+    println("===== NEW IMPL =====")
+    runNewImpl(testCase)
+    println("===== OLD IMPL =====")
+    runOldImpl(testCase)
+}
+
+private fun runNewImpl(testCase: String) {
+    mapOf(1 to 2, 2 to 1_000_000, 3 to 10, 4 to 100).forEach { (case, expandSize) ->
+        val result = runNewImplInternal(testCase, expandSize)
+        println("Day 11, part $case, expand $expandSize: $result")
+    }
+}
+
+private fun runNewImplInternal(testCase: String, extraSpace: Int): Long {
+    val reader =
+        object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
+            ?: throw Exception("Invalid state, cannot read the input")
+
+    var rawRow = 0
+    var extraRow = 0L
+    val stars = mutableListOf<Pair<Long, Long>>()
+    var cols = mutableListOf<MutableList<Boolean>>()
+
+    while (true) {
+        val rawLine = reader.readLine() ?: break
+        if (cols.isEmpty()) cols = MutableList(rawLine.length) { mutableListOf() }
+        if (rawLine.indexOf('#') == -1) extraRow += extraSpace - 1
+        rawLine.forEachIndexed { col, ch ->
+            cols[col].add(ch == '#')
+            if (ch == '#') stars.add(Pair(extraRow, col.toLong()))
+        }
+        rawRow += 1
+        extraRow += 1L
+    }
+
+    var extraCol = 0L
+    cols.forEachIndexed { index, col ->
+        if (col.indexOf(true) == -1) {
+            stars.forEachIndexed { idx, it ->
+                if (it.second >= extraCol) stars[idx] = Pair(it.first, it.second + extraSpace - 1)
+            }
+            extraCol += extraSpace - 1
+        }
+        extraCol += 1L
+    }
+    // println(stars)
+
+    var result = 0L
+    for (s1 in 0..<stars.size) {
+        for (s2 in s1 + 1..<stars.size) {
+            result += abs(stars[s1].first - stars[s2].first)
+            result += abs(stars[s1].second - stars[s2].second)
+        }
+    }
+    return result
+    // println(result)
+}
+
+private fun runOldImpl(testCase: String) {
     mapOf(1 to 2, 3 to 10, 4 to 100).forEach { (case, expandSize) ->
         val input = readStars(testCase)
         expandRowsSpace(input.stars, expandSize)
@@ -16,7 +75,7 @@ fun launchDay11(testCase: String) {
                 result += dist2[Pair(star1, star2)] ?: 0L
             }
         }
-        println("Day 11, part $case: $result")
+        println("Day 11, part $case, expand $expandSize: $result")
     }
 }
 
