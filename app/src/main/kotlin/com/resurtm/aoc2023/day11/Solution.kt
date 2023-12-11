@@ -3,7 +3,7 @@ package com.resurtm.aoc2023.day11
 import kotlin.math.abs
 
 fun launchDay11(testCase: String) {
-    mapOf(1 to 2, 2 to 10, 3 to 100, 4 to 1_000_000).forEach { (case, expandSize) ->
+    mapOf(1 to 2, 3 to 10, 4 to 100).forEach { (case, expandSize) ->
         val input = readStars(testCase)
         expandRowsSpace(input.stars, expandSize)
         expandColsSpace(input.stars, expandSize)
