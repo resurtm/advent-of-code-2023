@@ -8,14 +8,34 @@ fun launchDay11(testCase: String) {
     expandRowsSpace(stars)
     expandColsSpace(stars)
     printStars(stars)
-    println(calcVerticalDists(stars))
+    println(calcDists1(stars))
+    println(calcDists2(stars))
+    println(calcDists1(stars) == calcDists2(stars))
 }
 
-private fun calcVerticalDists(stars: Stars): MutableMap<Pair<Int, Int>, Int> {
+private fun calcDists2(stars: Stars): MutableMap<Pair<Int, Int>, Int> {
     val seen = mutableMapOf<Int, Int>()
     val dists = mutableMapOf<Pair<Int, Int>, Int>()
-    stars.forEach {
-        it.forEachIndexed { pos, star ->
+    for (col in 0..<stars[0].size) {
+        for (row in 0..<stars.size) {
+            val star = stars[row][col]
+            if (star != -1) {
+                seen.forEach { (otherStar, otherPos) ->
+                    dists[Pair(star, otherStar)] = abs(row - otherPos)
+                    dists[Pair(otherStar, star)] = abs(row - otherPos)
+                }
+                seen[star] = row
+            }
+        }
+    }
+    return dists
+}
+
+private fun calcDists1(stars: Stars): MutableMap<Pair<Int, Int>, Int> {
+    val seen = mutableMapOf<Int, Int>()
+    val dists = mutableMapOf<Pair<Int, Int>, Int>()
+    stars.forEach { row ->
+        row.forEachIndexed { pos, star ->
             if (star != -1) {
                 seen.forEach { (otherStar, otherPos) ->
                     dists[Pair(star, otherStar)] = abs(pos - otherPos)
