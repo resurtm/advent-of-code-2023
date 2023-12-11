@@ -3,14 +3,19 @@ package com.resurtm.aoc2023.day11
 import kotlin.math.abs
 
 fun launchDay11(testCase: String) {
-    val stars = readStars(testCase)
-    printStars(stars)
-    expandRowsSpace(stars)
-    expandColsSpace(stars)
-    printStars(stars)
-    println(calcDists1(stars))
-    println(calcDists2(stars))
-    println(calcDists1(stars) == calcDists2(stars))
+    val input = readStars(testCase)
+    expandRowsSpace(input.stars)
+    expandColsSpace(input.stars)
+    val dist1 = calcDists1(input.stars)
+    val dist2 = calcDists2(input.stars)
+    var result = 0
+    for (star1 in 0..<input.maxStar) {
+        for (star2 in star1..<input.maxStar) {
+            result += dist1[Pair(star1, star2)] ?: 0
+            result += dist2[Pair(star1, star2)] ?: 0
+        }
+    }
+    println(result)
 }
 
 private fun calcDists2(stars: Stars): MutableMap<Pair<Int, Int>, Int> {
@@ -86,7 +91,7 @@ private fun printStars(stars: Stars) {
     }
 }
 
-private fun readStars(testCase: String): Stars {
+private fun readStars(testCase: String): Input {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Invalid state, cannot read the input")
@@ -99,7 +104,9 @@ private fun readStars(testCase: String): Stars {
         }
         stars.add(row.toMutableList())
     }
-    return stars
+    return Input(stars, maxStar = starIndex)
 }
+
+private data class Input(val stars: Stars, val maxStar: Int)
 
 private typealias Stars = MutableList<MutableList<Int>>
