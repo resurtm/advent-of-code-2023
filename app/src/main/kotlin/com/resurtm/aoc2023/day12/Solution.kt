@@ -1,24 +1,21 @@
 package com.resurtm.aoc2023.day12
 
 fun launchDay12(testCase: String) {
-    println("Day 12, part 1: ${calcPart1(testCase)}")
+    println("Day 12, part 1: ${calculate(testCase)}")
+    println("Day 12, part 2: ${calculate(testCase, 5)}")
 }
 
-private fun calcPart1(testCase: String): Int {
+private fun calculate(testCase: String, repCount: Int = 1): Long {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Invalid state, cannot read the input")
-
-    var result = 0
+    var result = 0L
     while (true) {
         val rawLine = reader.readLine() ?: break
-        println(rawLine)
-        val parsed = parseLine(rawLine)
-        val res = mutableSetOf<String>()
-        combine(parsed.first, "#", parsed.second, res, compCount = 5)
-        combine(parsed.first, ".", parsed.second, res, compCount = 5)
-        result += res.size
-        println(res.size)
+        val p = parseLine(rawLine, repCount)
+        val cache = mutableMapOf<Pair<String, List<Int>>, Int>()
+        val item = comb(p.first, p.second, cache)
+        result += item
     }
     return result
 }
@@ -39,88 +36,52 @@ private fun parseLine(rawLine: String, repCount: Int = 1): Pair<String, List<Int
     return Pair(mask, blocks)
 }
 
-private fun combine(mask: String, ch: String, blocks: List<Int>, result: MutableSet<String>, compCount: Int = 1) {
-    val pos = mask.indexOf("?")
-    if (pos == -1) {
-        if (checkMask(mask, blocks, compCount)) result.add(mask)
-        return
-    }
-    val nextMask = mask.substring(0, pos) + ch + mask.substring(pos + 1, mask.length)
-    combine(nextMask, "#", blocks, result, compCount)
-    combine(nextMask, ".", blocks, result, compCount)
-}
+private fun comb(
+    mask: String,
+    blocks: List<Int>,
+    ca: MutableMap<Pair<String, List<Int>>, Int>
+): Int {
+    val existing = ca[Pair(mask, blocks)]
+    if (existing != null) return existing
 
-private fun checkMask(inpMask: String, inpBlocks: List<Int>, compCount: Int = 1): Boolean {
-    var block = 0
-    var accum = 0
-
-    val mask = inpMask
-    val blocks = inpBlocks
-
-    /*
-    val mask = mutableListOf<Char>()
-    val blocks = mutableListOf<Int>()
-    repeat(compCount) {
-        mask += inpMask
-        if (it != compCount - 1) mask.add('?')
-        blocks += inpBlocks
+    if (mask.isEmpty()) {
+        return if (blocks.isEmpty()) 1 else 0
     }
 
-    combine(mask, '#', blocks, result, compCount)
-    combine(mask, '.', blocks, result, compCount)*/
-
-    (mask + '.').forEach {
-        if (it == '.') {
-            if (accum != 0) {
-                if (block == blocks.size || accum != blocks[block]) return false
-                block++
-            }
-            accum = 0
-        } else accum++
-    }
-    return block == blocks.size
-}
-
-private fun parseLineTemp(rawLine: String) {
-    val parts = rawLine.split(' ')
-    val mask = parts[0].toMutableList()
-    val blocks = parts[1].split(',').map { it.trim() }.filter { it.isNotEmpty() }.map { it.toInt() }
-
-    traverse(0, mask + '.', blocks)
-//    println(total)
-//    println("=====")
-}
-
-private fun traverse(startAt: Int, mask: List<Char>, blocks: List<Int>, depth: Int = 0, pos: List<Int> = listOf()) {
-    if (blocks.isEmpty()) {
-        if (compare(blocks, pos, mask)) println("$depth - $pos")
-        return
-    }
-    val block = blocks[0]
-    if (mask.subList(startAt, mask.size).isEmpty()) return
-
-    for (idx in startAt..<mask.size - block) {
-        val chunk = mask.subList(idx, idx + block + 1)
-        if (!(chunk.subList(0, chunk.size - 1).all { it == '?' || it == '#' } && chunk.last() != '#')) continue
-
-        traverse(
-            idx + block + 1,
-            mask,
-            blocks.subList(1, blocks.size),
-            depth + 1,
-            pos + listOf(idx)
-        )
-    }
-}
-
-private fun compare(blocks: List<Int>, pos: List<Int>, mask: List<Char>): Boolean {
-    val newMask = mutableListOf<Char>()
-    mask.forEach { _ -> newMask.add('.') }
-    for (idx in pos.indices) {
-        repeat(blocks[idx]) {
-            newMask[pos[idx] + it] = '#'
+    return when (mask.first()) {
+        '?' -> {
+            comb(mask.replaceFirst('?', '#'), blocks, ca) +
+                    comb(mask.replaceFirst('?', '.'), blocks, ca)
         }
+
+        '.' -> {
+            val res = comb(mask.trimStart('.'), blocks, ca)
+            ca[Pair(mask, blocks)] = res
+            res
+        }
+
+        '#' -> {
+            if (blocks.isEmpty() || mask.length < blocks.first() || mask.substring(0, blocks.first())
+                    .indexOf('.') != -1
+            ) {
+                ca[Pair(mask, blocks)] = 0
+                0
+            } else if (blocks.size > 1) {
+                if (mask.length < blocks.first() + 1 || mask[blocks.first()] == '#') {
+                    ca[Pair(mask, blocks)] = 0
+                    0
+                } else {
+                    val res = comb(mask.substring(blocks.first() + 1, mask.length), blocks.subList(1, blocks.size), ca)
+                    ca[Pair(mask, blocks)] = res
+                    res
+                }
+            } else {
+                val res = comb(mask.substring(blocks.first(), mask.length), blocks.subList(1, blocks.size), ca)
+                ca[Pair(mask, blocks)] = res
+                res
+            }
+        }
+
+        else -> 0
     }
-    println(newMask)
-    return true
 }
