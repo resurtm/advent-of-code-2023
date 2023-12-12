@@ -13,7 +13,7 @@ private fun calculate(testCase: String, repCount: Int = 1): Long {
     while (true) {
         val rawLine = reader.readLine() ?: break
         val p = parseLine(rawLine, repCount)
-        val cache = mutableMapOf<Pair<String, List<Int>>, Int>()
+        val cache = mutableMapOf<Pair<String, List<Int>>, Long>()
         val item = comb(p.first, p.second, cache)
         result += item
     }
@@ -39,8 +39,8 @@ private fun parseLine(rawLine: String, repCount: Int = 1): Pair<String, List<Int
 private fun comb(
     mask: String,
     blocks: List<Int>,
-    ca: MutableMap<Pair<String, List<Int>>, Int>
-): Int {
+    ca: MutableMap<Pair<String, List<Int>>, Long>
+): Long {
     val existing = ca[Pair(mask, blocks)]
     if (existing != null) return existing
 
@@ -76,7 +76,7 @@ private fun comb(
                     res
                 }
             } else {
-                val res = comb(mask.substring(blocks.first(), mask.length), blocks.subList(1, blocks.size), ca)
+                val res = comb(mask.substring(blocks.first(), mask.length), blocks.subList(1, 1), ca)
                 ca[Pair(mask, blocks)] = res
                 res
             }
