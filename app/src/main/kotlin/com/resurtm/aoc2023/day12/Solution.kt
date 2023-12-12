@@ -1,6 +1,23 @@
 package com.resurtm.aoc2023.day12
 
 fun launchDay12(testCase: String) {
+    println("Day 12, part 1: ${calcPart1(testCase)}")
+    println("Day 12, part 2: ${calcPart2(testCase)}")
+}
+
+private fun calcPart2(testCase: String): Int {
+    val reader =
+        object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
+            ?: throw Exception("Invalid state, cannot read the input")
+
+    while (true) {
+        val rawLine = reader.readLine() ?: break
+        val parsed = parseLine(rawLine, 5)
+    }
+    return 0
+}
+
+private fun calcPart1(testCase: String): Int {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Invalid state, cannot read the input")
@@ -8,12 +25,16 @@ fun launchDay12(testCase: String) {
     var result = 0
     while (true) {
         val rawLine = reader.readLine() ?: break
-        result += parseLine(rawLine)
+        val parsed = parseLine(rawLine, 1)
+        val res = mutableSetOf<String>()
+        combine(parsed.first, '#', parsed.second, res)
+        combine(parsed.first, '.', parsed.second, res)
+        result += res.size
     }
-    println("Day 12, part 1: $result")
+    return result
 }
 
-private fun parseLine(rawLine: String, repCount: Int = 1): Int {
+private fun parseLine(rawLine: String, repCount: Int): Pair<List<Char>, List<Int>> {
     val parts = rawLine.split(' ')
     val rawMask = parts[0].toMutableList()
     val rawBlocks = parts[1].split(',').map { it.trim() }.filter { it.isNotEmpty() }.map { it.toInt() }
@@ -26,10 +47,7 @@ private fun parseLine(rawLine: String, repCount: Int = 1): Int {
         blocks += rawBlocks
     }
 
-    val result = mutableSetOf<String>()
-    combine(mask, '#', blocks, result)
-    combine(mask, '.', blocks, result)
-    return result.size
+    return Pair(mask, blocks)
 }
 
 private fun combine(mask: List<Char>, ch: Char, blocks: List<Int>, result: MutableSet<String>) {
