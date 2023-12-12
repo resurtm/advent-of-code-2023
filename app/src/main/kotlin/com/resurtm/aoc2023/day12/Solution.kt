@@ -13,10 +13,18 @@ fun launchDay12(testCase: String) {
     println("Day 12, part 1: $result")
 }
 
-private fun parseLine(rawLine: String): Int {
+private fun parseLine(rawLine: String, repCount: Int = 1): Int {
     val parts = rawLine.split(' ')
-    val mask = parts[0].toMutableList()
-    val blocks = parts[1].split(',').map { it.trim() }.filter { it.isNotEmpty() }.map { it.toInt() }
+    val rawMask = parts[0].toMutableList()
+    val rawBlocks = parts[1].split(',').map { it.trim() }.filter { it.isNotEmpty() }.map { it.toInt() }
+
+    val mask = mutableListOf<Char>()
+    val blocks = mutableListOf<Int>()
+    repeat(repCount) {
+        mask += rawMask
+        if (it != repCount - 1) mask.add('?')
+        blocks += rawBlocks
+    }
 
     val result = mutableSetOf<String>()
     combine(mask, '#', blocks, result)
