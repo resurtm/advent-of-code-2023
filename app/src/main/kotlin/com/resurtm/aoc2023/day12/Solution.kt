@@ -2,19 +2,6 @@ package com.resurtm.aoc2023.day12
 
 fun launchDay12(testCase: String) {
     println("Day 12, part 1: ${calcPart1(testCase)}")
-    println("Day 12, part 2: ${calcPart2(testCase)}")
-}
-
-private fun calcPart2(testCase: String): Int {
-    val reader =
-        object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
-            ?: throw Exception("Invalid state, cannot read the input")
-
-    while (true) {
-        val rawLine = reader.readLine() ?: break
-        val parsed = parseLine(rawLine, 5)
-    }
-    return 0
 }
 
 private fun calcPart1(testCase: String): Int {
@@ -25,45 +12,63 @@ private fun calcPart1(testCase: String): Int {
     var result = 0
     while (true) {
         val rawLine = reader.readLine() ?: break
-        val parsed = parseLine(rawLine, 1)
+        println(rawLine)
+        val parsed = parseLine(rawLine)
         val res = mutableSetOf<String>()
-        combine(parsed.first, '#', parsed.second, res)
-        combine(parsed.first, '.', parsed.second, res)
+        combine(parsed.first, "#", parsed.second, res, compCount = 5)
+        combine(parsed.first, ".", parsed.second, res, compCount = 5)
         result += res.size
+        println(res.size)
     }
     return result
 }
 
-private fun parseLine(rawLine: String, repCount: Int): Pair<List<Char>, List<Int>> {
+private fun parseLine(rawLine: String, repCount: Int = 1): Pair<String, List<Int>> {
     val parts = rawLine.split(' ')
-    val rawMask = parts[0].toMutableList()
+    val rawMask = parts[0]
     val rawBlocks = parts[1].split(',').map { it.trim() }.filter { it.isNotEmpty() }.map { it.toInt() }
 
-    val mask = mutableListOf<Char>()
+    var mask = ""
     val blocks = mutableListOf<Int>()
     repeat(repCount) {
         mask += rawMask
-        if (it != repCount - 1) mask.add('?')
+        if (it != repCount - 1) mask += "?"
         blocks += rawBlocks
     }
 
     return Pair(mask, blocks)
 }
 
-private fun combine(mask: List<Char>, ch: Char, blocks: List<Int>, result: MutableSet<String>) {
-    val pos = mask.indexOf('?')
+private fun combine(mask: String, ch: String, blocks: List<Int>, result: MutableSet<String>, compCount: Int = 1) {
+    val pos = mask.indexOf("?")
     if (pos == -1) {
-        if (checkMask(mask, blocks)) result.add(mask.joinToString(""))
+        if (checkMask(mask, blocks, compCount)) result.add(mask)
         return
     }
-    val nextMask = mask.subList(0, pos) + ch + mask.subList(pos + 1, mask.size)
-    combine(nextMask, '#', blocks, result)
-    combine(nextMask, '.', blocks, result)
+    val nextMask = mask.substring(0, pos) + ch + mask.substring(pos + 1, mask.length)
+    combine(nextMask, "#", blocks, result, compCount)
+    combine(nextMask, ".", blocks, result, compCount)
 }
 
-private fun checkMask(mask: List<Char>, blocks: List<Int>): Boolean {
+private fun checkMask(inpMask: String, inpBlocks: List<Int>, compCount: Int = 1): Boolean {
     var block = 0
     var accum = 0
+
+    val mask = inpMask
+    val blocks = inpBlocks
+
+    /*
+    val mask = mutableListOf<Char>()
+    val blocks = mutableListOf<Int>()
+    repeat(compCount) {
+        mask += inpMask
+        if (it != compCount - 1) mask.add('?')
+        blocks += inpBlocks
+    }
+
+    combine(mask, '#', blocks, result, compCount)
+    combine(mask, '.', blocks, result, compCount)*/
+
     (mask + '.').forEach {
         if (it == '.') {
             if (accum != 0) {
