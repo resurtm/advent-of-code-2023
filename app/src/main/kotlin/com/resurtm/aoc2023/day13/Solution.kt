@@ -10,17 +10,13 @@ private fun calcPart1(input: Input): Int {
     input.forEach { pattern ->
         val hor = checkPatternHorizontal(pattern)
         val ver = checkPatternVertical(pattern)
-        result += if (hor.first) hor.second * 100 else 0
-        result += if (ver.first) ver.second else 0
+        result += if (hor.first) (hor.second + 1) * 100 else 0
+        result += if (ver.first) ver.second + 1 else 0
     }
     return result
 }
 
 private fun checkPatternHorizontal(pattern: Pattern): Pair<Boolean, Int> {
-    var filled = false
-    var maxSize = 0
-    var maxRow = 0
-
     for (row0 in 0..<pattern.size - 1) {
         var row1 = row0
         var row2 = row0 + 1
@@ -39,23 +35,14 @@ private fun checkPatternHorizontal(pattern: Pattern): Pair<Boolean, Int> {
             size++
         }
 
-        if (allMatch)
-            filled = true
-
-        if (maxSize < size) {
-            maxSize = size
-            maxRow = row0
-        }
+        if (allMatch && (row1 == -1 || row2 == pattern.size))
+            return Pair(true, row0)
     }
 
-    return Pair(filled, maxRow + 1)
+    return Pair(false, -1)
 }
 
 private fun checkPatternVertical(pattern: Pattern): Pair<Boolean, Int> {
-    var filled = false
-    var maxSize = 0
-    var maxCol = 0
-
     for (col0 in 0..<pattern[0].size - 1) {
         var col1 = col0
         var col2 = col0 + 1
@@ -74,16 +61,11 @@ private fun checkPatternVertical(pattern: Pattern): Pair<Boolean, Int> {
             size++
         }
 
-        if (allMatch)
-            filled = true
-
-        if (maxSize < size) {
-            maxSize = size
-            maxCol = col0
-        }
+        if (allMatch && (col1 == -1 || col2 == pattern[0].size))
+            return Pair(true, col0)
     }
 
-    return Pair(filled, maxCol + 1)
+    return Pair(false, -1)
 }
 
 private fun readInput(testCase: String): Input {
