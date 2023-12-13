@@ -10,13 +10,14 @@ private fun calcPart1(input: Input): Int {
     input.forEach { pattern ->
         val hor = checkPatternHorizontal(pattern)
         val ver = checkPatternVertical(pattern)
-        // println(if (hor.first >= ver.first) hor.second else ver.second)
-        result += if (hor.first >= ver.first) hor.second * 100 else ver.second
+        result += if (hor.first) hor.second * 100 else 0
+        result += if (ver.first) ver.second else 0
     }
     return result
 }
 
-private fun checkPatternHorizontal(pattern: Pattern): Pair<Int, Int> {
+private fun checkPatternHorizontal(pattern: Pattern): Pair<Boolean, Int> {
+    var filled = false
     var maxSize = 0
     var maxRow = 0
 
@@ -24,16 +25,22 @@ private fun checkPatternHorizontal(pattern: Pattern): Pair<Int, Int> {
         var row1 = row0
         var row2 = row0 + 1
         var size = 0
+        var allMatch = true
 
         loop@ while (row1 >= 0 && row2 < pattern.size) {
             for (col in pattern[0].indices)
-                if (pattern[row1][col] != pattern[row2][col])
+                if (pattern[row1][col] != pattern[row2][col]) {
+                    allMatch = false
                     break@loop
+                }
 
             row1--
             row2++
             size++
         }
+
+        if (allMatch)
+            filled = true
 
         if (maxSize < size) {
             maxSize = size
@@ -41,10 +48,11 @@ private fun checkPatternHorizontal(pattern: Pattern): Pair<Int, Int> {
         }
     }
 
-    return Pair(maxSize, maxRow + 1)
+    return Pair(filled, maxRow + 1)
 }
 
-private fun checkPatternVertical(pattern: Pattern): Pair<Int, Int> {
+private fun checkPatternVertical(pattern: Pattern): Pair<Boolean, Int> {
+    var filled = false
     var maxSize = 0
     var maxCol = 0
 
@@ -52,16 +60,22 @@ private fun checkPatternVertical(pattern: Pattern): Pair<Int, Int> {
         var col1 = col0
         var col2 = col0 + 1
         var size = 0
+        var allMatch = true
 
         loop@ while (col1 >= 0 && col2 < pattern[0].size) {
             for (row in pattern.indices)
-                if (pattern[row][col1] != pattern[row][col2])
+                if (pattern[row][col1] != pattern[row][col2]) {
+                    allMatch = false
                     break@loop
+                }
 
             col1--
             col2++
             size++
         }
+
+        if (allMatch)
+            filled = true
 
         if (maxSize < size) {
             maxSize = size
@@ -69,7 +83,7 @@ private fun checkPatternVertical(pattern: Pattern): Pair<Int, Int> {
         }
     }
 
-    return Pair(maxSize, maxCol + 1)
+    return Pair(filled, maxCol + 1)
 }
 
 private fun readInput(testCase: String): Input {
