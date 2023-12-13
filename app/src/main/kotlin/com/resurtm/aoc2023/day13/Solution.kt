@@ -3,6 +3,53 @@ package com.resurtm.aoc2023.day13
 fun launchDay13(testCase: String) {
     val input = readInput(testCase)
     println("Day 13, part 1: ${calcPart1(input)}")
+    println("Day 13, part 2: ${calcPart2(input)}")
+}
+
+private fun calcPart2(input: Input): Int {
+    var result = 0
+    input.forEach { pattern ->
+        println("=========")
+        val hor = checkPatternHorizontal(pattern)
+        val ver = checkPatternVertical(pattern)
+
+        val smudged = smudge(pattern, hor, ver)
+        if (smudged.first) {
+            val h = checkPatternHorizontal(smudged.second)
+            val v = checkPatternVertical(smudged.second)
+
+            println("--------")
+            println("$h - $v")
+            println("$hor - $ver")
+
+            if (hor.first && h.first && hor.second != h.second) {
+                result += (h.second + 1) * 100
+            } else if (ver.first && v.first && ver.second != v.second) {
+                result += v.second + 1
+            } else if (hor.first && v.first) {
+                result += v.second + 1
+            } else if (ver.first && h.first) {
+                result += (h.second + 1) * 100
+            }
+        }
+    }
+    return result
+}
+
+private fun smudge(pat: Pattern, hi: Pair<Boolean, Int>, vi: Pair<Boolean, Int>): Pair<Boolean, Pattern> {
+    for (row in pat.indices) {
+        for (col in pat[0].indices) {
+            val smudged = pat.map { it.toMutableList() }
+            smudged[row][col] = if (smudged[row][col] == '#') '.' else '#'
+
+            val hor = checkPatternHorizontal(smudged)
+            val ver = checkPatternVertical(smudged)
+
+            if (hor.first && hor.second != hi.second) return Pair(true, smudged)
+            if (ver.first && ver.second != vi.second) return Pair(true, smudged)
+        }
+    }
+    return Pair(false, emptyList())
 }
 
 private fun calcPart1(input: Input): Int {
@@ -10,6 +57,7 @@ private fun calcPart1(input: Input): Int {
     input.forEach { pattern ->
         val hor = checkPatternHorizontal(pattern)
         val ver = checkPatternVertical(pattern)
+
         result += if (hor.first) (hor.second + 1) * 100 else 0
         result += if (ver.first) ver.second + 1 else 0
     }
@@ -73,8 +121,8 @@ private fun readInput(testCase: String): Input {
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Invalid state, cannot read the input")
 
-    val input: MutableList<List<List<Char>>> = mutableListOf()
-    var pattern: MutableList<List<Char>> = mutableListOf()
+    val input: MutableList<List<MutableList<Char>>> = mutableListOf()
+    var pattern: MutableList<MutableList<Char>> = mutableListOf()
     var curr = 0
 
     while (true) {
@@ -83,7 +131,7 @@ private fun readInput(testCase: String): Input {
             input.add(pattern)
             pattern = mutableListOf()
             curr++
-        } else pattern.add(rawLine.toList())
+        } else pattern.add(rawLine.toMutableList())
     }
 
     input.add(pattern)
@@ -91,4 +139,4 @@ private fun readInput(testCase: String): Input {
 }
 
 private typealias Input = List<Pattern>
-private typealias Pattern = List<List<Char>>
+private typealias Pattern = List<MutableList<Char>>
