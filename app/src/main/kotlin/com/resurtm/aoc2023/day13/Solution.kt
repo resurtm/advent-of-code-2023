@@ -9,47 +9,37 @@ fun launchDay13(testCase: String) {
 private fun calcPart2(input: Input): Int {
     var result = 0
     input.forEach { pattern ->
-        println("=========")
-        val hor = checkPatternHorizontal(pattern)
-        val ver = checkPatternVertical(pattern)
-
-        val smudged = smudge(pattern, hor, ver)
-        if (smudged.first) {
-            val h = checkPatternHorizontal(smudged.second)
-            val v = checkPatternVertical(smudged.second)
-
-            println("--------")
-            println("$h - $v")
-            println("$hor - $ver")
-
-            if (hor.first && h.first && hor.second != h.second) {
-                result += (h.second + 1) * 100
-            } else if (ver.first && v.first && ver.second != v.second) {
-                result += v.second + 1
-            } else if (hor.first && v.first) {
-                result += v.second + 1
-            } else if (ver.first && h.first) {
-                result += (h.second + 1) * 100
-            }
-        }
+        val res = smudge(pattern)
+        result += if (res.first.first) (res.first.second + 1) * 100 else 0
+        result += if (res.second.first) res.second.second + 1 else 0
     }
     return result
 }
 
-private fun smudge(pat: Pattern, hi: Pair<Boolean, Int>, vi: Pair<Boolean, Int>): Pair<Boolean, Pattern> {
-    for (row in pat.indices) {
-        for (col in pat[0].indices) {
-            val smudged = pat.map { it.toMutableList() }
-            smudged[row][col] = if (smudged[row][col] == '#') '.' else '#'
+private fun smudge(pattern: Pattern): Pair<Pair<Boolean, Int>, Pair<Boolean, Int>> {
+    val h = checkPatternHorizontal(pattern)
+    val v = checkPatternVertical(pattern)
+
+    for (row in pattern.indices) {
+        for (col in pattern[row].indices) {
+            val smudged = pattern.map { it.toMutableList() }
+            smudged[row][col] = if (smudged[row][col] == '.') '#' else '.'
 
             val hor = checkPatternHorizontal(smudged)
-            val ver = checkPatternVertical(smudged)
+            hor.forEach {
+                if (h.isNotEmpty() && h.first().first && h.first().second != it.second) return Pair(it, Pair(false, -1))
+                else if (v.isNotEmpty() && v.first().first) return Pair(it, Pair(false, -1))
+            }
 
-            if (hor.first && hor.second != hi.second) return Pair(true, smudged)
-            if (ver.first && ver.second != vi.second) return Pair(true, smudged)
+            val ver = checkPatternVertical(smudged)
+            ver.forEach {
+                if (v.isNotEmpty() && v.first().first && v.first().second != it.second) return Pair(Pair(false, -1), it)
+                else if (h.isNotEmpty() && h.first().first) return Pair(Pair(false, -1), it)
+            }
         }
     }
-    return Pair(false, emptyList())
+
+    return Pair(Pair(false, -1), Pair(false, -1))
 }
 
 private fun calcPart1(input: Input): Int {
@@ -58,13 +48,15 @@ private fun calcPart1(input: Input): Int {
         val hor = checkPatternHorizontal(pattern)
         val ver = checkPatternVertical(pattern)
 
-        result += if (hor.first) (hor.second + 1) * 100 else 0
-        result += if (ver.first) ver.second + 1 else 0
+        result += if (hor.isNotEmpty() && hor.first().first) (hor.first().second + 1) * 100 else 0
+        result += if (ver.isNotEmpty() && ver.first().first) ver.first().second + 1 else 0
     }
     return result
 }
 
-private fun checkPatternHorizontal(pattern: Pattern): Pair<Boolean, Int> {
+private fun checkPatternHorizontal(pattern: Pattern): List<Pair<Boolean, Int>> {
+    val result = mutableListOf<Pair<Boolean, Int>>()
+
     for (row0 in 0..<pattern.size - 1) {
         var row1 = row0
         var row2 = row0 + 1
@@ -84,13 +76,15 @@ private fun checkPatternHorizontal(pattern: Pattern): Pair<Boolean, Int> {
         }
 
         if (allMatch && (row1 == -1 || row2 == pattern.size))
-            return Pair(true, row0)
+            result.add(Pair(true, row0))
     }
 
-    return Pair(false, -1)
+    return result
 }
 
-private fun checkPatternVertical(pattern: Pattern): Pair<Boolean, Int> {
+private fun checkPatternVertical(pattern: Pattern): List<Pair<Boolean, Int>> {
+    val result = mutableListOf<Pair<Boolean, Int>>()
+
     for (col0 in 0..<pattern[0].size - 1) {
         var col1 = col0
         var col2 = col0 + 1
@@ -110,10 +104,10 @@ private fun checkPatternVertical(pattern: Pattern): Pair<Boolean, Int> {
         }
 
         if (allMatch && (col1 == -1 || col2 == pattern[0].size))
-            return Pair(true, col0)
+            result.add(Pair(true, col0))
     }
 
-    return Pair(false, -1)
+    return result
 }
 
 private fun readInput(testCase: String): Input {
