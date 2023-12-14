@@ -2,7 +2,12 @@ package com.resurtm.aoc2023.day14
 
 fun launchDay14(testCase: String) {
     val input = readInput(testCase)
-    tiltNorth(input)
+    repeat(3) {
+        tiltNorth(input)
+        tiltWest(input)
+        tiltSouth(input)
+        tiltEast(input)
+    }
     println(calcSum(input))
     input.forEach { println(it.joinToString("")) }
 }
@@ -10,14 +15,57 @@ fun launchDay14(testCase: String) {
 private fun tiltNorth(grid: Input) {
     for (row in grid.indices) {
         for (col in grid[row].indices) {
-            if (grid[row][col] == 'O') {
-                for (row2 in row - 1 downTo -1) {
-                    if (row2 == -1 || grid[row2][col] != '.') {
-                        val x = grid[row][col]
-                        grid[row][col] = grid[row2 + 1][col]
-                        grid[row2 + 1][col] = x
-                        break
-                    }
+            if (grid[row][col] == 'O') for (row2 in row - 1 downTo -1) {
+                if (row2 == -1 || grid[row2][col] != '.') {
+                    val x = grid[row][col]
+                    grid[row][col] = grid[row2 + 1][col]
+                    grid[row2 + 1][col] = x
+                    break
+                }
+            }
+        }
+    }
+}
+
+private fun tiltWest(grid: Input) {
+    for (col in grid[0].indices) {
+        for (row in grid.indices) {
+            if (grid[row][col] == 'O') for (col2 in col - 1 downTo -1) {
+                if (col2 == -1 || grid[row][col2] != '.') {
+                    val x = grid[row][col]
+                    grid[row][col] = grid[row][col2 + 1]
+                    grid[row][col2 + 1] = x
+                    break
+                }
+            }
+        }
+    }
+}
+
+private fun tiltSouth(grid: Input) {
+    for (row in grid.size - 1 downTo 0) {
+        for (col in grid[row].indices) {
+            if (grid[row][col] == 'O') for (row2 in row + 1..grid.size) {
+                if (row2 == grid.size || grid[row2][col] != '.') {
+                    val x = grid[row][col]
+                    grid[row][col] = grid[row2 - 1][col]
+                    grid[row2 - 1][col] = x
+                    break
+                }
+            }
+        }
+    }
+}
+
+private fun tiltEast(grid: Input) {
+    for (col in grid[0].size - 1 downTo 0) {
+        for (row in grid.indices) {
+            if (grid[row][col] == 'O') for (col2 in col + 1..grid[0].size) {
+                if (col2 == grid[0].size || grid[row][col2] != '.') {
+                    val x = grid[row][col]
+                    grid[row][col] = grid[row][col2 - 1]
+                    grid[row][col2 - 1] = x
+                    break
                 }
             }
         }
