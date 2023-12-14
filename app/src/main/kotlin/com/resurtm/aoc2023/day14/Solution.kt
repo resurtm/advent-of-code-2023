@@ -2,28 +2,36 @@ package com.resurtm.aoc2023.day14
 
 fun launchDay14(testCase: String) {
     val input = readInput(testCase)
-    for (row in input.indices) {
-        for (col in input[row].indices) {
-            if (input[row][col] == 'O') {
+    tiltNorth(input)
+    println(calcSum(input))
+    input.forEach { println(it.joinToString("")) }
+}
+
+private fun tiltNorth(grid: Input) {
+    for (row in grid.indices) {
+        for (col in grid[row].indices) {
+            if (grid[row][col] == 'O') {
                 for (row2 in row - 1 downTo -1) {
-                    if (row2 == -1 || input[row2][col] != '.') {
-                        val x = input[row][col]
-                        input[row][col] = input[row2 + 1][col]
-                        input[row2 + 1][col] = x
+                    if (row2 == -1 || grid[row2][col] != '.') {
+                        val x = grid[row][col]
+                        grid[row][col] = grid[row2 + 1][col]
+                        grid[row2 + 1][col] = x
                         break
                     }
                 }
             }
         }
     }
+}
+
+private fun calcSum(grid: Input): Int {
     var result = 0
-    var counter = input.size
-    input.forEach {
-        it.forEach { if (it == 'O') result += counter }
+    var counter = grid.size
+    grid.forEach {
+        it.forEach { x -> if (x == 'O') result += counter }
         counter--
     }
-    println(result)
-    // input.forEach { println(it.joinToString("")) }
+    return result
 }
 
 private fun readInput(testCase: String): Input {
