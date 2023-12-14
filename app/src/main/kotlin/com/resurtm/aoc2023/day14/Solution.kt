@@ -1,15 +1,67 @@
 package com.resurtm.aoc2023.day14
 
 fun launchDay14(testCase: String) {
+    launchPart1(testCase)
+    launchPart2(testCase)
+}
+
+private fun launchPart1(testCase: String) {
     val input = readInput(testCase)
-    repeat(3) {
-        tiltNorth(input)
-        tiltWest(input)
-        tiltSouth(input)
-        tiltEast(input)
+    tiltNorth(input)
+    println("Day 14, part 1: ${calcSum(input)}")
+}
+
+private fun launchPart2(testCase: String) {
+    val grid = readInput(testCase)
+    var tilts = 0
+    val history = mutableListOf<Input>()
+
+    while (search(grid, history) == -1) {
+        tilts++
+        history.add(clone(grid))
+
+        tiltNorth(grid)
+        tiltWest(grid)
+        tiltSouth(grid)
+        tiltEast(grid)
     }
-    println(calcSum(input))
-    input.forEach { println(it.joinToString("")) }
+
+    val goal = 1_000_000_000
+    val pos = search(grid, history)
+    val diff = tilts - pos
+    var todo = (goal - pos) % diff
+
+    do {
+        tiltNorth(grid)
+        tiltWest(grid)
+        tiltSouth(grid)
+        tiltEast(grid)
+
+        todo--
+    } while (todo > 0)
+
+    println("Day 14, part 2: ${calcSum(grid)}")
+}
+
+private fun clone(input: Input): Input = input.map { it.toMutableList() }.toMutableList()
+
+private fun search(a: Input, bs: List<Input>): Int {
+    bs.forEachIndexed { idx, b ->
+        var res = true
+        loop@ for (row in a.indices) for (col in a[row].indices) {
+            if (a[row][col] != b[row][col]) {
+                res = false
+                break@loop
+            }
+        }
+        if (res) return idx
+    }
+    return -1
+}
+
+private fun printInput(grid: Input) {
+    println("-----")
+    grid.forEach { println(it.joinToString("")) }
 }
 
 private fun tiltNorth(grid: Input) {
