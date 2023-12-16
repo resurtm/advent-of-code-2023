@@ -48,6 +48,7 @@ private fun runBeam(gr: Grid): Int {
             beamCnt++
         }
 
+        // println("${vis.size} - $beamCnt - $genCnt")
         his.add(vis.size)
         genCnt++
     }
@@ -55,18 +56,18 @@ private fun runBeam(gr: Grid): Int {
     return vis.size
 }
 
-private fun diagonalBeam(pos: Pos, dir: Dir, tile: Char): Beam {
-    if (tile == '/') return when (dir) {
-        Dir.TOP -> Beam(pos.copy(col = pos.col + 1), Dir.RIGHT)
-        Dir.DOWN -> Beam(pos.copy(col = pos.col - 1), Dir.LEFT)
-        Dir.LEFT -> Beam(pos.copy(row = pos.row + 1), Dir.DOWN)
-        Dir.RIGHT -> Beam(pos.copy(row = pos.row - 1), Dir.TOP)
+private fun diagonalBeam(p: Pos, d: Dir, t: Char): Beam {
+    if (t == '/') return when (d) {
+        Dir.TOP -> Beam(p.copy(col = p.col + 1), Dir.RIGHT)
+        Dir.DOWN -> Beam(p.copy(col = p.col - 1), Dir.LEFT)
+        Dir.LEFT -> Beam(p.copy(row = p.row + 1), Dir.DOWN)
+        Dir.RIGHT -> Beam(p.copy(row = p.row - 1), Dir.TOP)
     }
-    if (tile == '\\') return when (dir) {
-        Dir.TOP -> Beam(pos.copy(col = pos.col - 1), Dir.LEFT)
-        Dir.DOWN -> Beam(pos.copy(col = pos.col + 1), Dir.RIGHT)
-        Dir.LEFT -> Beam(pos.copy(row = pos.row - 1), Dir.TOP)
-        Dir.RIGHT -> Beam(pos.copy(row = pos.row + 1), Dir.DOWN)
+    if (t == '\\') return when (d) {
+        Dir.TOP -> Beam(p.copy(col = p.col - 1), Dir.LEFT)
+        Dir.DOWN -> Beam(p.copy(col = p.col + 1), Dir.RIGHT)
+        Dir.LEFT -> Beam(p.copy(row = p.row - 1), Dir.TOP)
+        Dir.RIGHT -> Beam(p.copy(row = p.row + 1), Dir.DOWN)
     }
     throw Exception("Invalid state, cannot process a diagonal move")
 }
@@ -77,7 +78,8 @@ private fun branchBeam(p: Pos, d: Dir, gr: Grid): Pair<Beam, Beam?> {
             Beam(p.copy(row = p.row - 1), Dir.TOP),
             Beam(p.copy(row = p.row + 1), Dir.DOWN)
         )
-    } else if (gr[p.row][p.col] == '-' && (d == Dir.TOP || d == Dir.DOWN)) {
+    }
+    if (gr[p.row][p.col] == '-' && (d == Dir.TOP || d == Dir.DOWN)) {
         return Pair(
             Beam(p.copy(col = p.col - 1), Dir.LEFT),
             Beam(p.copy(col = p.col + 1), Dir.RIGHT)
@@ -86,11 +88,11 @@ private fun branchBeam(p: Pos, d: Dir, gr: Grid): Pair<Beam, Beam?> {
     return Pair(Beam(moveBeam(p, d), d), null)
 }
 
-private fun moveBeam(pos: Pos, dir: Dir): Pos = when (dir) {
-    Dir.TOP -> pos.copy(row = pos.row - 1)
-    Dir.DOWN -> pos.copy(row = pos.row + 1)
-    Dir.LEFT -> pos.copy(col = pos.col - 1)
-    Dir.RIGHT -> pos.copy(col = pos.col + 1)
+private fun moveBeam(p: Pos, d: Dir): Pos = when (d) {
+    Dir.TOP -> p.copy(row = p.row - 1)
+    Dir.DOWN -> p.copy(row = p.row + 1)
+    Dir.LEFT -> p.copy(col = p.col - 1)
+    Dir.RIGHT -> p.copy(col = p.col + 1)
 }
 
 private fun printGrid(gen: Int, gr: Grid, beams: List<Beam>) {
