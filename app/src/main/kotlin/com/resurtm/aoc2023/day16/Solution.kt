@@ -9,8 +9,11 @@ private fun runBeam(gr: Grid): Int {
     val beams = mutableListOf(Beam(Pos(), Dir.RIGHT))
     val vis = mutableSetOf<Pos>()
 
+    val his = mutableListOf<Int>()
+    val hisSize = 100
+
     var genCnt = 0
-    while (genCnt < 150) {
+    while (!(his.size >= hisSize && his.subList(his.size - 10, his.size).all { it == his.last() })) {
         // printGrid(genCnt, gr, beams)
 
         var beamCnt = 0
@@ -26,6 +29,7 @@ private fun runBeam(gr: Grid): Int {
 
             when (gr[p.row][p.col]) {
                 '.' -> p = moveBeam(p, d)
+
                 '|', '-' -> {
                     val r = branchBeam(p, d, gr)
                     p = r.first.p; d = r.first.d
@@ -44,6 +48,7 @@ private fun runBeam(gr: Grid): Int {
             beamCnt++
         }
 
+        his.add(vis.size)
         genCnt++
     }
 
@@ -124,5 +129,3 @@ private enum class Dir {
 private data class Beam(val p: Pos, val d: Dir)
 
 private typealias Grid = List<List<Char>>
-
-private typealias Vis = MutableSet<Pos>
