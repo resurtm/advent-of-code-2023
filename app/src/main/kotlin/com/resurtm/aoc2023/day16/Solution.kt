@@ -7,62 +7,53 @@ fun launchDay16(testCase: String) {
 
 private fun runBeam(gr: Grid): Int {
     val bms = mutableListOf(Beam(Pos(), Dir.RIGHT))
-
-    val bmh = mutableListOf(mutableListOf<Pos>())
-    val bmhs = 1000
-
-    val vis = mutableSetOf<Pos>()
-
+    val vis = mutableSetOf(bms.first())
     val vh = mutableListOf<Int>()
     val vhs = 10
 
     var genNum = 0
     while (!(vh.size >= vhs && vh.subList(vh.size - vhs, vh.size).all { it == vh.last() })) {
-        // printGrid(genCnt, gr, beams)
+        /*printGrid(genNum, gr, bms)
+        printVis(genNum, gr, vis)*/
 
         var bmNum = 0
         while (bmNum < bms.size) {
-            var p = bms[bmNum].p
-            var d = bms[bmNum].d
+            val bm = bms[bmNum]
+            var p = bm.p
+            var d = bm.d
 
-            if (p.row < 0 || p.col < 0 || p.row > gr.size - 1 || p.col > gr[0].size - 1) {
-                bms.removeAt(bmNum)
-                bmh.removeAt(bmNum)
-                continue
-            }
-            vis.add(p)
-
-            when (gr[p.row][p.col]) {
+            if (p.row >= 0 && p.col >= 0 && p.row < gr.size && p.col < gr[0].size) when (gr[p.row][p.col]) {
                 '.' -> p = moveBeam(p, d)
 
                 '|', '-' -> {
                     val r = branchBeam(p, d, gr)
-                    p = r.first.p; d = r.first.d
-                    if (r.second != null) {
-                        bmNum++; bms.addFirst(r.second); bmh.addFirst(mutableListOf())
+                    p = r.first.p
+                    d = r.first.d
+
+                    val second = r.second
+                    if (second != null) {
+                        bmNum++
+                        bms.addFirst(second)
+                        vis.add(second)
                     }
                 }
 
                 '/', '\\' -> {
                     val r = diagonalBeam(p, d, gr[p.row][p.col])
-                    p = r.p; d = r.d
+                    p = r.p
+                    d = r.d
                 }
             }
 
-            bms[bmNum] = Beam(p, d)
-            bmh[bmNum].add(p)
-            bmNum++
-        }
-
-        var cnt = 0
-        while (cnt < bmh.size) {
-            val lh = bmh[cnt]
-            if (lh.size >= bmhs && lh.subList(lh.size - bmhs, lh.size).all { vis.contains(it) }) {
-                bms.removeAt(cnt)
-                bmh.removeAt(cnt)
+            val bmn = Beam(p, d)
+            if (bmn in vis || p.row < 0 || p.col < 0 || p.row >= gr.size || p.col >= gr[0].size) {
+                bms.removeAt(bmNum)
                 continue
             }
-            cnt++
+
+            bms[bmNum] = bmn
+            vis.add(bmn)
+            bmNum++
         }
 
         // println("${vis.size} - ${bms.size} - $genNum")
@@ -70,7 +61,7 @@ private fun runBeam(gr: Grid): Int {
         genNum++
     }
 
-    return vis.size
+    return vis.map { it.p }.toSet().size
 }
 
 private fun diagonalBeam(p: Pos, d: Dir, t: Char): Beam {
@@ -119,6 +110,18 @@ private fun printGrid(gen: Int, gr: Grid, beams: List<Beam>) {
         rowItems.forEachIndexed { col, colItem ->
             val p = Pos(row, col)
             print(if (pos.indexOf(p) == -1) colItem else 'X')
+        }
+        println()
+    }
+}
+
+private fun printVis(gen: Int, gr: Grid, vis: Set<Beam>) {
+    println("Generation $gen")
+    val pos = vis.map { it.p }
+    gr.forEachIndexed { row, rowItems ->
+        rowItems.forEachIndexed { col, _ ->
+            val p = Pos(row, col)
+            print(if (p in pos) '#' else '.')
         }
         println()
     }
