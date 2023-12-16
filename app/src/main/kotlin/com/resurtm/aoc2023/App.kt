@@ -19,13 +19,8 @@ import com.resurtm.aoc2023.day16.launchDay16
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    try {
-        val taskInfo = parseArgs(args)
-        launchSolution(taskInfo.first, taskInfo.second)
-    } catch (ex: Exception) {
-        println("Error: $ex")
-        exitProcess(-1)
-    }
+    val taskInfo = parseArgs(args)
+    launchSolution(taskInfo.first, taskInfo.second)
 }
 
 fun parseArgs(args: Array<String>): Pair<Int, String> {

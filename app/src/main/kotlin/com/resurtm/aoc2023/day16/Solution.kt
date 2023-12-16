@@ -1,63 +1,84 @@
 package com.resurtm.aoc2023.day16
 
 fun launchDay16(testCase: String) {
+    val part1 = runBeam(readInputGrid(testCase))
+    println("Day 16, part 1: $part1")
+}
+
+private fun runBeam(gr: Grid): Int {
+    val beams = mutableListOf(Beam(Pos(), Dir.RIGHT))
     val vis = mutableSetOf<Pos>()
-    runBeam(Pos(), Dir.RIGHT, readInputGrid(testCase), vis)
-    println(vis.size)
-}
 
-private fun runBeam(posInp: Pos, dirInp: Dir, grid: Grid, vis: Vis) {
-    var pos = posInp.copy()
-    var dir = dirInp
-    var counter = 0
+    var genCnt = 0
+    while (genCnt < 150) {
+        // printGrid(genCnt, gr, beams)
 
-    while (counter++ < 20) {
-        println(pos)
+        var beamCnt = 0
+        while (beamCnt < beams.size) {
+            var p = beams[beamCnt].p
+            var d = beams[beamCnt].d
 
-        if (pos.row < 0 || pos.col < 0 || pos.row > grid.size - 1 || pos.col > grid[0].size - 1) break
-        vis.add(pos)
+            if (p.row < 0 || p.col < 0 || p.row > gr.size - 1 || p.col > gr[0].size - 1) {
+                beams.removeAt(beamCnt)
+                continue
+            }
+            vis.add(p)
 
-        when (grid[pos.row][pos.col]) {
-            '.' -> pos = moveBeam(pos, dir)
-            '|', '-' -> {
-                val r = branchBeam(pos, dir, grid, vis)
-                pos = r.first; dir = r.second
+            when (gr[p.row][p.col]) {
+                '.' -> p = moveBeam(p, d)
+                '|', '-' -> {
+                    val r = branchBeam(p, d, gr)
+                    p = r.first.p; d = r.first.d
+                    if (r.second != null) {
+                        beamCnt++; beams.addFirst(r.second)
+                    }
+                }
+
+                '/', '\\' -> {
+                    val r = diagonalBeam(p, d, gr[p.row][p.col])
+                    p = r.p; d = r.d
+                }
             }
 
-            '/', '\\' -> {
-                val r = diagonalBeam(pos, dir, grid[pos.row][pos.col])
-                pos = r.first; dir = r.second
-            }
+            beams[beamCnt] = Beam(p, d)
+            beamCnt++
         }
+
+        genCnt++
     }
+
+    return vis.size
 }
 
-private fun diagonalBeam(pos: Pos, dir: Dir, tile: Char): Pair<Pos, Dir> {
+private fun diagonalBeam(pos: Pos, dir: Dir, tile: Char): Beam {
     if (tile == '/') return when (dir) {
-        Dir.TOP -> Pair(pos.copy(col = pos.col + 1), Dir.RIGHT)
-        Dir.DOWN -> Pair(pos.copy(col = pos.col - 1), Dir.LEFT)
-        Dir.LEFT -> Pair(pos.copy(row = pos.row + 1), Dir.DOWN)
-        Dir.RIGHT -> Pair(pos.copy(row = pos.row - 1), Dir.TOP)
+        Dir.TOP -> Beam(pos.copy(col = pos.col + 1), Dir.RIGHT)
+        Dir.DOWN -> Beam(pos.copy(col = pos.col - 1), Dir.LEFT)
+        Dir.LEFT -> Beam(pos.copy(row = pos.row + 1), Dir.DOWN)
+        Dir.RIGHT -> Beam(pos.copy(row = pos.row - 1), Dir.TOP)
     }
     if (tile == '\\') return when (dir) {
-        Dir.TOP -> Pair(pos.copy(col = pos.col - 1), Dir.LEFT)
-        Dir.DOWN -> Pair(pos.copy(col = pos.col + 1), Dir.RIGHT)
-        Dir.LEFT -> Pair(pos.copy(row = pos.row - 1), Dir.TOP)
-        Dir.RIGHT -> Pair(pos.copy(row = pos.row + 1), Dir.DOWN)
+        Dir.TOP -> Beam(pos.copy(col = pos.col - 1), Dir.LEFT)
+        Dir.DOWN -> Beam(pos.copy(col = pos.col + 1), Dir.RIGHT)
+        Dir.LEFT -> Beam(pos.copy(row = pos.row - 1), Dir.TOP)
+        Dir.RIGHT -> Beam(pos.copy(row = pos.row + 1), Dir.DOWN)
     }
     throw Exception("Invalid state, cannot process a diagonal move")
 }
 
-private fun branchBeam(pos: Pos, dir: Dir, grid: Grid, vis: Vis): Pair<Pos, Dir> {
-    val tile = grid[pos.row][pos.col]
-    if (tile == '|' && (dir == Dir.LEFT || dir == Dir.RIGHT)) {
-        runBeam(pos.copy(row = pos.row - 1), Dir.TOP, grid, vis)
-        return Pair(pos.copy(row = pos.row + 1), Dir.DOWN)
-    } else if (tile == '-' && (dir == Dir.TOP || dir == Dir.DOWN)) {
-        runBeam(pos.copy(col = pos.col - 1), Dir.LEFT, grid, vis)
-        return Pair(pos.copy(col = pos.col + 1), Dir.RIGHT)
+private fun branchBeam(p: Pos, d: Dir, gr: Grid): Pair<Beam, Beam?> {
+    if (gr[p.row][p.col] == '|' && (d == Dir.LEFT || d == Dir.RIGHT)) {
+        return Pair(
+            Beam(p.copy(row = p.row - 1), Dir.TOP),
+            Beam(p.copy(row = p.row + 1), Dir.DOWN)
+        )
+    } else if (gr[p.row][p.col] == '-' && (d == Dir.TOP || d == Dir.DOWN)) {
+        return Pair(
+            Beam(p.copy(col = p.col - 1), Dir.LEFT),
+            Beam(p.copy(col = p.col + 1), Dir.RIGHT)
+        )
     }
-    return Pair(moveBeam(pos, dir), dir)
+    return Pair(Beam(moveBeam(p, d), d), null)
 }
 
 private fun moveBeam(pos: Pos, dir: Dir): Pos = when (dir) {
@@ -67,9 +88,10 @@ private fun moveBeam(pos: Pos, dir: Dir): Pos = when (dir) {
     Dir.RIGHT -> pos.copy(col = pos.col + 1)
 }
 
-private fun printGrid(grid: Grid, pos: List<Pos>) {
-    println("==========")
-    grid.forEachIndexed { row, rowItems ->
+private fun printGrid(gen: Int, gr: Grid, beams: List<Beam>) {
+    println("Generation $gen")
+    val pos = beams.map { it.p }
+    gr.forEachIndexed { row, rowItems ->
         rowItems.forEachIndexed { col, colItem ->
             val p = Pos(row, col)
             print(if (pos.indexOf(p) == -1) colItem else 'X')
@@ -98,6 +120,8 @@ private enum class Dir {
     LEFT,
     RIGHT
 }
+
+private data class Beam(val p: Pos, val d: Dir)
 
 private typealias Grid = List<List<Char>>
 
