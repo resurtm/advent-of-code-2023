@@ -44,7 +44,8 @@ private fun runBeam(gr: Grid, startPos: Pos, startDir: Dir): Set<Pos> {
             var p = bm.p
             var d = bm.d
 
-            if (p.row >= 0 && p.col >= 0 && p.row < gr.size && p.col < gr[0].size) when (gr[p.row][p.col]) {
+            // if (p.row >= 0 && p.col >= 0 && p.row < gr.size && p.col < gr[0].size) when (gr[p.row][p.col]) {
+            when (gr[p.row][p.col]) {
                 '.' -> p = moveBeam(p, d)
 
                 '|', '-' -> {
@@ -104,12 +105,20 @@ private fun diagonalBeam(p: Pos, d: Dir, t: Char): Beam {
 
 private fun branchBeam(p: Pos, d: Dir, gr: Grid): Pair<Beam, Beam?> {
     if (gr[p.row][p.col] == '|' && (d == Dir.LEFT || d == Dir.RIGHT)) {
+        if (p.row == 0)
+            return Pair(Beam(p.copy(row = p.row + 1), Dir.DOWN), null)
+        if (p.row == gr.size - 1)
+            return Pair(Beam(p.copy(row = p.row - 1), Dir.UP), null)
         return Pair(
             Beam(p.copy(row = p.row - 1), Dir.UP),
             Beam(p.copy(row = p.row + 1), Dir.DOWN)
         )
     }
     if (gr[p.row][p.col] == '-' && (d == Dir.UP || d == Dir.DOWN)) {
+        if (p.col == 0)
+            return Pair(Beam(p.copy(col = p.col + 1), Dir.RIGHT), null)
+        if (p.col == gr[0].size - 1)
+            return Pair(Beam(p.copy(col = p.col - 1), Dir.LEFT), null)
         return Pair(
             Beam(p.copy(col = p.col - 1), Dir.LEFT),
             Beam(p.copy(col = p.col + 1), Dir.RIGHT)
