@@ -6,23 +6,28 @@ fun launchDay16(testCase: String) {
 }
 
 private fun runBeam(gr: Grid): Int {
-    val beams = mutableListOf(Beam(Pos(), Dir.RIGHT))
+    val bms = mutableListOf(Beam(Pos(), Dir.RIGHT))
+
+    val bmh = mutableListOf(mutableListOf<Pos>())
+    val bmhs = 1000
+
     val vis = mutableSetOf<Pos>()
 
-    val his = mutableListOf<Int>()
-    val hisSize = 100
+    val vh = mutableListOf<Int>()
+    val vhs = 10
 
-    var genCnt = 0
-    while (!(his.size >= hisSize && his.subList(his.size - 10, his.size).all { it == his.last() })) {
+    var genNum = 0
+    while (!(vh.size >= vhs && vh.subList(vh.size - vhs, vh.size).all { it == vh.last() })) {
         // printGrid(genCnt, gr, beams)
 
-        var beamCnt = 0
-        while (beamCnt < beams.size) {
-            var p = beams[beamCnt].p
-            var d = beams[beamCnt].d
+        var bmNum = 0
+        while (bmNum < bms.size) {
+            var p = bms[bmNum].p
+            var d = bms[bmNum].d
 
             if (p.row < 0 || p.col < 0 || p.row > gr.size - 1 || p.col > gr[0].size - 1) {
-                beams.removeAt(beamCnt)
+                bms.removeAt(bmNum)
+                bmh.removeAt(bmNum)
                 continue
             }
             vis.add(p)
@@ -34,7 +39,7 @@ private fun runBeam(gr: Grid): Int {
                     val r = branchBeam(p, d, gr)
                     p = r.first.p; d = r.first.d
                     if (r.second != null) {
-                        beamCnt++; beams.addFirst(r.second)
+                        bmNum++; bms.addFirst(r.second); bmh.addFirst(mutableListOf())
                     }
                 }
 
@@ -44,13 +49,25 @@ private fun runBeam(gr: Grid): Int {
                 }
             }
 
-            beams[beamCnt] = Beam(p, d)
-            beamCnt++
+            bms[bmNum] = Beam(p, d)
+            bmh[bmNum].add(p)
+            bmNum++
         }
 
-        // println("${vis.size} - $beamCnt - $genCnt")
-        his.add(vis.size)
-        genCnt++
+        var cnt = 0
+        while (cnt < bmh.size) {
+            val lh = bmh[cnt]
+            if (lh.size >= bmhs && lh.subList(lh.size - bmhs, lh.size).all { vis.contains(it) }) {
+                bms.removeAt(cnt)
+                bmh.removeAt(cnt)
+                continue
+            }
+            cnt++
+        }
+
+        // println("${vis.size} - ${bms.size} - $genNum")
+        vh.add(vis.size)
+        genNum++
     }
 
     return vis.size
