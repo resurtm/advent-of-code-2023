@@ -4,11 +4,12 @@ import java.util.PriorityQueue
 import kotlin.math.min
 
 fun launchDay17(testCase: String) {
-    val part1 = traverse(readInputGrid(testCase))
-    println("Day 17, part 1: $part1")
+    val grid = readInputGrid(testCase)
+    println("Day 17, part 1: ${traverse(grid)}")
+    // println("Day 17, part 2: ${traverse(grid, minSize = 4, maxSize = 10)}")
 }
 
-private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int {
+private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null, minSize: Int = 0, maxSize: Int = 4): Int {
     val begin: Pos = beginInp ?: Pos()
     val end: Pos = endInp ?: Pos(gr.size - 1, gr[0].size - 1)
 
@@ -16,11 +17,11 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
     for (row in gr.indices) {
         for (col in gr[0].indices) {
             val pos = Pos(row, col)
-            repeat(4) {
-                nodes[Node(pos, it, Dir.TOP)] = Int.MAX_VALUE
-                nodes[Node(pos, it, Dir.DOWN)] = Int.MAX_VALUE
-                nodes[Node(pos, it, Dir.LEFT)] = Int.MAX_VALUE
-                nodes[Node(pos, it, Dir.RIGHT)] = Int.MAX_VALUE
+            for (idx in minSize..maxSize) {
+                nodes[Node(pos, idx, Dir.TOP)] = Int.MAX_VALUE
+                nodes[Node(pos, idx, Dir.DOWN)] = Int.MAX_VALUE
+                nodes[Node(pos, idx, Dir.LEFT)] = Int.MAX_VALUE
+                nodes[Node(pos, idx, Dir.RIGHT)] = Int.MAX_VALUE
             }
         }
     }
@@ -37,7 +38,7 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
         if (curr in visited) continue
         visited.add(curr)
 
-        for (nextDir in getNextDirs(curr.dir, curr.steps)) {
+        for (nextDir in getNextDirs2(curr.dir, curr.steps, minSize, maxSize)) {
             val nextPos = getNextPos(curr, nextDir.first, gr) ?: continue
 
             val other = Node(nextPos, nextDir.second, nextDir.first)
@@ -53,11 +54,11 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
     }
 
     var res = Int.MAX_VALUE
-    repeat(4) {
-        res = min(res, nodes[Node(end, it, Dir.TOP)] ?: Int.MAX_VALUE)
-        res = min(res, nodes[Node(end, it, Dir.DOWN)] ?: Int.MAX_VALUE)
-        res = min(res, nodes[Node(end, it, Dir.LEFT)] ?: Int.MAX_VALUE)
-        res = min(res, nodes[Node(end, it, Dir.RIGHT)] ?: Int.MAX_VALUE)
+    for (idx in minSize..maxSize) {
+        res = min(res, nodes[Node(end, idx, Dir.TOP)] ?: Int.MAX_VALUE)
+        res = min(res, nodes[Node(end, idx, Dir.DOWN)] ?: Int.MAX_VALUE)
+        res = min(res, nodes[Node(end, idx, Dir.LEFT)] ?: Int.MAX_VALUE)
+        res = min(res, nodes[Node(end, idx, Dir.RIGHT)] ?: Int.MAX_VALUE)
     }
     return res
 }
@@ -73,7 +74,7 @@ private fun getNextPos(node: Node, dir: Dir, gr: Grid): Pos? {
     return if (good) pos else null
 }
 
-private fun getNextDirs(dir: Dir, steps: Int): Array<Pair<Dir, Int>> = when (dir) {
+private fun getNextDirs(dir: Dir, steps: Int, minSize: Int, maxSize: Int): Array<Pair<Dir, Int>> = when (dir) {
     Dir.TOP -> {
         if (steps >= 3) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
         else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.TOP, steps + 1), Pair(Dir.RIGHT, 1))
@@ -91,6 +92,32 @@ private fun getNextDirs(dir: Dir, steps: Int): Array<Pair<Dir, Int>> = when (dir
 
     Dir.RIGHT -> {
         if (steps >= 3) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.RIGHT, steps + 1), Pair(Dir.DOWN, 1))
+    }
+}
+
+private fun getNextDirs2(dir: Dir, steps: Int, minSize: Int, maxSize: Int): Array<Pair<Dir, Int>> = when (dir) {
+    Dir.TOP -> {
+        if (steps < minSize) arrayOf(Pair(Dir.TOP, steps + 1))
+        else if (steps < maxSize) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.TOP, steps + 1), Pair(Dir.RIGHT, 1))
+    }
+
+    Dir.DOWN -> {
+        if (steps < minSize) arrayOf(Pair(Dir.DOWN, steps + 1))
+        else if (steps < maxSize) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.DOWN, steps + 1), Pair(Dir.RIGHT, 1))
+    }
+
+    Dir.LEFT -> {
+        if (steps < minSize) arrayOf(Pair(Dir.LEFT, steps + 1))
+        else if (steps < maxSize) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.LEFT, steps + 1), Pair(Dir.DOWN, 1))
+    }
+
+    Dir.RIGHT -> {
+        if (steps < minSize) arrayOf(Pair(Dir.RIGHT, steps + 1))
+        else if (steps < maxSize) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
         else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.RIGHT, steps + 1), Pair(Dir.DOWN, 1))
     }
 }
@@ -113,10 +140,10 @@ private data class Pos(val row: Int = 0, val col: Int = 0)
 
 private data class Node(val pos: Pos, val steps: Int, val dir: Dir)
 
-private data class ComparableNode(val prio: Int, val node: Node) : Comparable<ComparableNode> {
+private data class ComparableNode(val priority: Int, val node: Node) : Comparable<ComparableNode> {
     override fun compareTo(other: ComparableNode) =
-        if (this.prio > other.prio) 1
-        else if (this.prio < other.prio) -1
+        if (this.priority > other.priority) 1
+        else if (this.priority < other.priority) -1
         else 0
 }
 
