@@ -31,19 +31,19 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
     val visited = mutableSetOf<Node>()
 
     while (queue.isNotEmpty()) {
-        val node = queue.removeFirst()
-        if (node in visited) continue
-        visited.add(node)
+        val curr = queue.removeFirst()
+        if (curr in visited) continue
+        visited.add(curr)
 
-        for (nextDir in getNextDirs(node.dir, node.steps)) {
-            val nextPos = getNextPos(node, nextDir.first, gr)
-                ?: continue
+        for (nextDir in getNextDirs(curr.dir, curr.steps)) {
+            val nextPos = getNextPos(curr, nextDir.first, gr) ?: continue
+
             val other = Node(nextPos, nextDir.second, nextDir.first)
-            val dist1 = nodes[other]
-                ?: throw Exception("Invalid state, node cannot be null, $nextPos, $nextDir")
-            val dist2 = nodes[node]
-                ?: throw Exception("Invalid state, node cannot be null, $nextPos, $nextDir")
-            nodes[other] = min(dist1, dist2 + gr[nextPos.row][nextPos.col])
+            if (visited.contains(other)) continue
+
+            val distOther = nodes[other] ?: throw Exception("Invalid state, node cannot be null")
+            val distCurr = nodes[curr] ?: throw Exception("Invalid state, node cannot be null")
+            nodes[other] = min(distOther, distCurr + gr[nextPos.row][nextPos.col])
             queue.add(other)
         }
     }
@@ -71,23 +71,23 @@ private fun getNextPos(node: Node, dir: Dir, gr: Grid): Pos? {
 
 private fun getNextDirs(dir: Dir, steps: Int): Array<Pair<Dir, Int>> = when (dir) {
     Dir.TOP -> {
-        val base = arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
-        if (steps >= 3) base else base + Pair(Dir.TOP, steps + 1)
+        if (steps >= 3) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.TOP, steps + 1), Pair(Dir.RIGHT, 1))
     }
 
     Dir.DOWN -> {
-        val base = arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
-        if (steps >= 3) base else base + Pair(Dir.DOWN, steps + 1)
+        if (steps >= 3) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.DOWN, steps + 1), Pair(Dir.RIGHT, 1))
     }
 
     Dir.LEFT -> {
-        val base = arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
-        if (steps >= 3) base else base + Pair(Dir.LEFT, steps + 1)
+        if (steps >= 3) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.LEFT, steps + 1), Pair(Dir.DOWN, 1))
     }
 
     Dir.RIGHT -> {
-        val base = arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
-        if (steps >= 3) base else base + Pair(Dir.RIGHT, steps + 1)
+        if (steps >= 3) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.RIGHT, steps + 1), Pair(Dir.DOWN, 1))
     }
 }
 
