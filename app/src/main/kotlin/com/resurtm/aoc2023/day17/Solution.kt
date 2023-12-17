@@ -23,10 +23,10 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
             }
         }
     }
-    nodes[Node(begin.copy(), 0, Dir.RIGHT)] = 0
+    nodes[Node(begin.copy(), 0, Dir.DOWN)] = 0
 
     val queue = ArrayDeque<Node>()
-    queue.add(Node(begin.copy(), 0, Dir.RIGHT))
+    queue.add(Node(begin.copy(), 0, Dir.DOWN))
 
     val visited = mutableSetOf<Node>()
 
