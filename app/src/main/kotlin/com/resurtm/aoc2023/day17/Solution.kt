@@ -7,8 +7,8 @@ fun launchDay17(testCase: String) {
 
 private fun printGrid(gr: Grid) {
     println("=====")
-    gr.forEachIndexed { row, rowItems ->
-        println(rowItems.map { it.toString() }.joinToString(""))
+    gr.forEach { row ->
+        println(row.joinToString(""))
     }
 }
 
