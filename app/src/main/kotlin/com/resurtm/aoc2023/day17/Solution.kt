@@ -1,5 +1,6 @@
 package com.resurtm.aoc2023.day17
 
+import java.util.*
 import kotlin.math.min
 
 fun launchDay17(testCase: String) {
@@ -25,13 +26,14 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
     }
     nodes[Node(begin.copy(), 0, Dir.RIGHT)] = 0
 
-    val queue = ArrayDeque<Node>()
-    queue.add(Node(begin.copy(), 0, Dir.RIGHT))
+    val queue = PriorityQueue<ComparableNode>()
+    queue.add(ComparableNode(0, Node(begin.copy(), 0, Dir.RIGHT)))
 
     val visited = mutableSetOf<Node>()
 
     while (queue.isNotEmpty()) {
-        val curr = queue.removeFirst()
+        val currRaw = queue.poll() ?: continue
+        val curr = currRaw.node
         if (curr in visited) continue
         visited.add(curr)
 
@@ -41,10 +43,12 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
             val other = Node(nextPos, nextDir.second, nextDir.first)
             if (visited.contains(other)) continue
 
-            val distOther = nodes[other] ?: throw Exception("Invalid state, node cannot be null")
             val distCurr = nodes[curr] ?: throw Exception("Invalid state, node cannot be null")
-            nodes[other] = min(distOther, distCurr + gr[nextPos.row][nextPos.col])
-            queue.add(other)
+            val distOther = nodes[other] ?: throw Exception("Invalid state, node cannot be null")
+
+            val newVal = min(distCurr + gr[nextPos.row][nextPos.col], distOther)
+            nodes[other] = newVal
+            queue.add(ComparableNode(newVal, other))
         }
     }
 
@@ -108,5 +112,12 @@ private typealias Grid = List<List<Int>>
 private data class Pos(val row: Int = 0, val col: Int = 0)
 
 private data class Node(val pos: Pos, val steps: Int, val dir: Dir)
+
+private data class ComparableNode(val prio: Int, val node: Node) : Comparable<ComparableNode> {
+    override fun compareTo(other: ComparableNode) =
+        if (this.prio > other.prio) 1
+        else if (this.prio < other.prio) -1
+        else 0
+}
 
 private enum class Dir { TOP, DOWN, LEFT, RIGHT }
