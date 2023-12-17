@@ -1,38 +1,43 @@
 package com.resurtm.aoc2023.day17
 
 fun launchDay17(testCase: String) {
-    traverse(Pos(), readInputGrid(testCase))
+    val part1 = traverse(readInputGrid(testCase))
+    println("Day 17, part 1: $part1")
 }
 
-private fun traverse(startPos: Pos, gr: Grid) {
-    var paths = mutableListOf(Path(mutableListOf(startPos)))
+private fun traverse(gr: Grid, beginPosInp: Pos? = null, endPosInp: Pos? = null): Int {
+    val beginPos: Pos = beginPosInp ?: Pos()
+    val endPos: Pos = endPosInp ?: Pos(gr.size - 1, gr[0].size - 1)
+
+    var min = -1
+    var paths = mutableListOf(Path(mutableListOf(beginPos)))
 
     var genCount = 0
-    while (genCount < 4) {
+    loop@ while (genCount < 1_000_000) {
         val newPaths = mutableListOf<Path>()
         for (path in paths) {
             val pos = path.items.last()
             val toAdd = mutableListOf<Pos>()
 
             if (pos.row > 0) {
-                val tmpPos = pos.copy(row = pos.row - 1)
-                if (!path.items.contains(tmpPos) && !inLine(path.items + listOf(tmpPos)))
-                    toAdd.add(tmpPos)
+                val t = pos.copy(row = pos.row - 1)
+                if (!path.items.contains(t) && !inLine(path.items + listOf(t)))
+                    toAdd.add(t)
             }
-            if (pos.row < gr.size - 2) {
-                val tmpPos = pos.copy(row = pos.row + 1)
-                if (!path.items.contains(tmpPos) && !inLine(path.items + listOf(tmpPos)))
-                    toAdd.add(tmpPos)
+            if (pos.row < gr.size - 1) {
+                val t = pos.copy(row = pos.row + 1)
+                if (!path.items.contains(t) && !inLine(path.items + listOf(t)))
+                    toAdd.add(t)
             }
             if (pos.col > 0) {
-                val tmpPos = pos.copy(col = pos.col - 1)
-                if (!path.items.contains(tmpPos) && !inLine(path.items + listOf(tmpPos)))
-                    toAdd.add(tmpPos)
+                val t = pos.copy(col = pos.col - 1)
+                if (!path.items.contains(t) && !inLine(path.items + listOf(t)))
+                    toAdd.add(t)
             }
-            if (pos.col < gr[0].size - 2) {
-                val tmpPos = pos.copy(col = pos.col + 1)
-                if (!path.items.contains(tmpPos) && !inLine(path.items + listOf(tmpPos)))
-                    toAdd.add(tmpPos)
+            if (pos.col < gr[0].size - 1) {
+                val t = pos.copy(col = pos.col + 1)
+                if (!path.items.contains(t) && !inLine(path.items + listOf(t)))
+                    toAdd.add(t)
             }
 
             toAdd.forEach {
@@ -43,21 +48,32 @@ private fun traverse(startPos: Pos, gr: Grid) {
         }
         paths = newPaths
 
+        paths.forEach {
+            if (it.items.last() == endPos && (min == -1 || min > it.sum)) {
+                println(it)
+                min = it.sum
+            }
+        }
+        if (paths.isEmpty()) break@loop
+
         genCount++
     }
+
+    return min
 }
 
 private fun inLine(lst: List<Pos>): Boolean {
-    if (lst.size < 4) return false
+    val lastN = 4
+    if (lst.size < lastN + 1) return false
     var vertical = true
     var horizontal = true
-    for (item in lst.subList(lst.size - 3, lst.size))
-        if (item.col != lst[lst.size - 3].col) {
+    for (item in lst.subList(lst.size - lastN, lst.size))
+        if (item.col != lst[lst.size - lastN].col) {
             vertical = false
             break
         }
-    for (item in lst.subList(lst.size - 3, lst.size))
-        if (item.row != lst[lst.size - 3].row) {
+    for (item in lst.subList(lst.size - lastN, lst.size))
+        if (item.row != lst[lst.size - lastN].row) {
             horizontal = false
             break
         }
