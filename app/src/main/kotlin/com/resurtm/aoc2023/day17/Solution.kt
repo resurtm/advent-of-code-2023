@@ -43,8 +43,7 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
                 ?: throw Exception("Invalid state, node cannot be null, $nextPos, $nextDir")
             val dist2 = nodes[node]
                 ?: throw Exception("Invalid state, node cannot be null, $nextPos, $nextDir")
-            val dist = min(dist1, dist2 + gr[node.pos.row][node.pos.col])
-            nodes[other] = dist
+            nodes[other] = min(dist1, dist2 + gr[nextPos.row][nextPos.col])
             queue.add(other)
         }
     }
@@ -57,7 +56,6 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
         res = min(res, nodes[Node(end, it, Dir.RIGHT)] ?: Int.MAX_VALUE)
     }
     return res
-    // return res - gr[begin.row][begin.col] + gr[end.row][end.col]
 }
 
 private fun getNextPos(node: Node, dir: Dir, gr: Grid): Pos? {
