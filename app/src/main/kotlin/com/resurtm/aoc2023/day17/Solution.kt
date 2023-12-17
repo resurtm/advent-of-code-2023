@@ -2,8 +2,69 @@ package com.resurtm.aoc2023.day17
 
 fun launchDay17(testCase: String) {
     // val part1 = traverse(readInputGrid(testCase))
-    val part1 = traverse2(readInputGrid(testCase))
+//    val part1 = traverse2(readInputGrid(testCase))
+    val part1 = traverse3(readInputGrid(testCase))
     println("Day 17, part 1: $part1")
+}
+
+private fun traverse3(grI: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int {
+    val gr: GridV2 = convertGrid(grI)
+    val begin: Pos = beginInp ?: Pos()
+    val end: Pos = endInp ?: Pos(gr.size - 1, gr[0].size - 1)
+
+    var pos = begin.copy()
+    gr[pos.row][pos.col].dist = 0
+    val vis = mutableListOf(pos)
+
+    var cnt = 0
+    // while (!gr[end.row][end.col].visited) {
+    while (true) {
+        cnt++
+        if (cnt > 100)
+            break
+
+        val ts = mutableListOf<Pos>()
+        val aa = pos.copy(row = pos.row + 1)
+        if (pos.row < gr.size - 1 && !gr[aa.row][aa.col].visited && !inl(vis + listOf(aa)))
+            ts.add(aa)
+        val bb = pos.copy(col = pos.col + 1)
+        if (pos.col < gr[0].size - 1 && !gr[bb.row][bb.col].visited && !inl(vis + listOf(bb)))
+            ts.add(bb)
+        val cc = pos.copy(row = pos.row - 1)
+        if (pos.row > 0 && !gr[cc.row][cc.col].visited && !inl(vis + listOf(cc)))
+            ts.add(cc)
+        val dd = pos.copy(col = pos.col - 1)
+        if (pos.col > 0 && !gr[dd.row][dd.col].visited && !inl(vis + listOf(dd)))
+            ts.add(dd)
+
+        var min = Int.MAX_VALUE
+        var minPos = Pos()
+        ts.forEach {
+            val dist = gr[pos.row][pos.col].dist + gr[it.row][it.col].weight
+            if (gr[it.row][it.col].dist > dist) gr[it.row][it.col].dist = dist
+            if (min > dist) {
+                min = dist
+                minPos = it
+            }
+        }
+
+        gr[pos.row][pos.col].visited = true
+        pos = minPos
+        vis.add(pos)
+
+        var minimum = Int.MAX_VALUE
+        gr.forEach { row ->
+            row.filter { !it.visited }.forEach {
+                if (minimum > it.dist) minimum = it.dist
+                // println(it.dist)
+            }
+        }
+        if (minimum == Int.MAX_VALUE) break
+    }
+
+    printGrid(grI, vis)
+
+    return gr[end.row][end.col].dist
 }
 
 private fun traverse2(gr: Grid, beginPosInp: Pos? = null, endPosInp: Pos? = null): Int {
@@ -113,7 +174,7 @@ private fun traverse(gr: Grid, beginPosInp: Pos? = null, endPosInp: Pos? = null)
 }
 
 private fun inl(lst: List<Pos>): Boolean {
-    val lastN = 5
+    val lastN = 4
     if (lst.size < lastN + 1) return false
     var vertical = true
     var horizontal = true
@@ -153,7 +214,13 @@ private fun readInputGrid(testCase: String): Grid {
     return input
 }
 
+private fun convertGrid(gr: Grid): GridV2 = gr.map { row -> row.map { Tile(it) }.toMutableList() }
+
 private typealias Grid = List<List<Int>>
+
+private typealias GridV2 = List<List<Tile>>
+
+private data class Tile(var weight: Int = 0, var visited: Boolean = false, var dist: Int = Int.MAX_VALUE)
 
 private data class Pos(val row: Int = 0, val col: Int = 0)
 
