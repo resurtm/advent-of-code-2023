@@ -16,22 +16,22 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
         for (col in gr[0].indices) {
             val pos = Pos(row, col)
             repeat(4) {
-                nodes[Node(pos, it, Dir.UP)] = Int.MAX_VALUE
+                nodes[Node(pos, it, Dir.TOP)] = Int.MAX_VALUE
                 nodes[Node(pos, it, Dir.DOWN)] = Int.MAX_VALUE
                 nodes[Node(pos, it, Dir.LEFT)] = Int.MAX_VALUE
                 nodes[Node(pos, it, Dir.RIGHT)] = Int.MAX_VALUE
             }
         }
     }
-    nodes[Node(begin.copy(), 0, Dir.DOWN)] = 0
+    nodes[Node(begin.copy(), 0, Dir.RIGHT)] = 0
 
     val queue = ArrayDeque<Node>()
-    queue.add(Node(begin.copy(), 0, Dir.DOWN))
+    queue.add(Node(begin.copy(), 0, Dir.RIGHT))
 
     val visited = mutableSetOf<Node>()
 
-    while (true) {
-        val node = queue.removeFirstOrNull() ?: break
+    while (queue.isNotEmpty()) {
+        val node = queue.removeFirst()
         if (node in visited) continue
         visited.add(node)
 
@@ -51,17 +51,18 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null): Int 
 
     var res = Int.MAX_VALUE
     repeat(4) {
-        res = min(res, nodes[Node(end, it, Dir.UP)] ?: Int.MAX_VALUE)
+        res = min(res, nodes[Node(end, it, Dir.TOP)] ?: Int.MAX_VALUE)
         res = min(res, nodes[Node(end, it, Dir.DOWN)] ?: Int.MAX_VALUE)
         res = min(res, nodes[Node(end, it, Dir.LEFT)] ?: Int.MAX_VALUE)
         res = min(res, nodes[Node(end, it, Dir.RIGHT)] ?: Int.MAX_VALUE)
     }
-    return res - gr[begin.row][begin.col] + gr[end.row][end.col]
+    return res
+    // return res - gr[begin.row][begin.col] + gr[end.row][end.col]
 }
 
 private fun getNextPos(node: Node, dir: Dir, gr: Grid): Pos? {
     val pos = when (dir) {
-        Dir.UP -> node.pos.copy(row = node.pos.row - 1)
+        Dir.TOP -> node.pos.copy(row = node.pos.row - 1)
         Dir.DOWN -> node.pos.copy(row = node.pos.row + 1)
         Dir.LEFT -> node.pos.copy(col = node.pos.col - 1)
         Dir.RIGHT -> node.pos.copy(col = node.pos.col + 1)
@@ -70,25 +71,25 @@ private fun getNextPos(node: Node, dir: Dir, gr: Grid): Pos? {
     return if (good) pos else null
 }
 
-private fun getNextDirs(dir: Dir, steps: Int): List<Pair<Dir, Int>> = when (dir) {
-    Dir.UP -> {
-        val base = listOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
-        if (steps >= 3) base else base + listOf(Pair(Dir.UP, steps + 1))
+private fun getNextDirs(dir: Dir, steps: Int): Array<Pair<Dir, Int>> = when (dir) {
+    Dir.TOP -> {
+        val base = arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        if (steps >= 3) base else base + Pair(Dir.TOP, steps + 1)
     }
 
     Dir.DOWN -> {
-        val base = listOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
-        if (steps >= 3) base else base + listOf(Pair(Dir.DOWN, steps + 1))
+        val base = arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        if (steps >= 3) base else base + Pair(Dir.DOWN, steps + 1)
     }
 
     Dir.LEFT -> {
-        val base = listOf(Pair(Dir.UP, 1), Pair(Dir.DOWN, 1))
-        if (steps >= 3) base else base + listOf(Pair(Dir.LEFT, steps + 1))
+        val base = arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        if (steps >= 3) base else base + Pair(Dir.LEFT, steps + 1)
     }
 
     Dir.RIGHT -> {
-        val base = listOf(Pair(Dir.UP, 1), Pair(Dir.DOWN, 1))
-        if (steps >= 3) base else base + listOf(Pair(Dir.RIGHT, steps + 1))
+        val base = arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        if (steps >= 3) base else base + Pair(Dir.RIGHT, steps + 1)
     }
 }
 
@@ -110,4 +111,4 @@ private data class Pos(val row: Int = 0, val col: Int = 0)
 
 private data class Node(val pos: Pos, val steps: Int, val dir: Dir)
 
-private enum class Dir { UP, DOWN, LEFT, RIGHT }
+private enum class Dir { TOP, DOWN, LEFT, RIGHT }
