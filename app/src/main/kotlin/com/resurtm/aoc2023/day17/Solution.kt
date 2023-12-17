@@ -6,7 +6,7 @@ import kotlin.math.min
 fun launchDay17(testCase: String) {
     val grid = readInputGrid(testCase)
     println("Day 17, part 1: ${traverse(grid)}")
-    // println("Day 17, part 2: ${traverse(grid, minSize = 4, maxSize = 10)}")
+    println("Day 17, part 2: ${traverse(grid, minSize = 4, maxSize = 10)}")
 }
 
 private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null, minSize: Int = 0, maxSize: Int = 4): Int {
@@ -17,7 +17,7 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null, minSi
     for (row in gr.indices) {
         for (col in gr[0].indices) {
             val pos = Pos(row, col)
-            for (idx in minSize..maxSize) {
+            for (idx in 0..maxSize) {
                 nodes[Node(pos, idx, Dir.TOP)] = Int.MAX_VALUE
                 nodes[Node(pos, idx, Dir.DOWN)] = Int.MAX_VALUE
                 nodes[Node(pos, idx, Dir.LEFT)] = Int.MAX_VALUE
@@ -26,9 +26,11 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null, minSi
         }
     }
     nodes[Node(begin.copy(), 0, Dir.RIGHT)] = 0
+    nodes[Node(begin.copy(), 0, Dir.DOWN)] = 0
 
     val queue = PriorityQueue<ComparableNode>()
     queue.add(ComparableNode(0, Node(begin.copy(), 0, Dir.RIGHT)))
+    queue.add(ComparableNode(0, Node(begin.copy(), 0, Dir.DOWN)))
 
     val visited = mutableSetOf<Node>()
 
@@ -38,7 +40,7 @@ private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null, minSi
         if (curr in visited) continue
         visited.add(curr)
 
-        for (nextDir in getNextDirs2(curr.dir, curr.steps, minSize, maxSize)) {
+        for (nextDir in getNextDirs(curr.dir, curr.steps, minSize, maxSize)) {
             val nextPos = getNextPos(curr, nextDir.first, gr) ?: continue
 
             val other = Node(nextPos, nextDir.second, nextDir.first)
@@ -74,50 +76,28 @@ private fun getNextPos(node: Node, dir: Dir, gr: Grid): Pos? {
     return if (good) pos else null
 }
 
-private fun getNextDirs(dir: Dir, steps: Int, minSize: Int, maxSize: Int): Array<Pair<Dir, Int>> = when (dir) {
+private fun getNextDirs(dir: Dir, steps: Int, min: Int, max: Int): Array<Pair<Dir, Int>> = when (dir) {
     Dir.TOP -> {
-        if (steps >= 3) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        if (steps >= max) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        else if (steps < min) arrayOf(Pair(Dir.TOP, steps + 1))
         else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.TOP, steps + 1), Pair(Dir.RIGHT, 1))
     }
 
     Dir.DOWN -> {
-        if (steps >= 3) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        if (steps >= max) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
+        else if (steps < min) arrayOf(Pair(Dir.DOWN, steps + 1))
         else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.DOWN, steps + 1), Pair(Dir.RIGHT, 1))
     }
 
     Dir.LEFT -> {
-        if (steps >= 3) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        if (steps >= max) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        else if (steps < min) arrayOf(Pair(Dir.LEFT, steps + 1))
         else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.LEFT, steps + 1), Pair(Dir.DOWN, 1))
     }
 
     Dir.RIGHT -> {
-        if (steps >= 3) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
-        else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.RIGHT, steps + 1), Pair(Dir.DOWN, 1))
-    }
-}
-
-private fun getNextDirs2(dir: Dir, steps: Int, minSize: Int, maxSize: Int): Array<Pair<Dir, Int>> = when (dir) {
-    Dir.TOP -> {
-        if (steps < minSize) arrayOf(Pair(Dir.TOP, steps + 1))
-        else if (steps < maxSize) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
-        else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.TOP, steps + 1), Pair(Dir.RIGHT, 1))
-    }
-
-    Dir.DOWN -> {
-        if (steps < minSize) arrayOf(Pair(Dir.DOWN, steps + 1))
-        else if (steps < maxSize) arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.RIGHT, 1))
-        else arrayOf(Pair(Dir.LEFT, 1), Pair(Dir.DOWN, steps + 1), Pair(Dir.RIGHT, 1))
-    }
-
-    Dir.LEFT -> {
-        if (steps < minSize) arrayOf(Pair(Dir.LEFT, steps + 1))
-        else if (steps < maxSize) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
-        else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.LEFT, steps + 1), Pair(Dir.DOWN, 1))
-    }
-
-    Dir.RIGHT -> {
-        if (steps < minSize) arrayOf(Pair(Dir.RIGHT, steps + 1))
-        else if (steps < maxSize) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        if (steps >= max) arrayOf(Pair(Dir.TOP, 1), Pair(Dir.DOWN, 1))
+        else if (steps < min) arrayOf(Pair(Dir.RIGHT, steps + 1))
         else arrayOf(Pair(Dir.TOP, 1), Pair(Dir.RIGHT, steps + 1), Pair(Dir.DOWN, 1))
     }
 }
