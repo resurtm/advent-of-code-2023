@@ -1,6 +1,6 @@
 package com.resurtm.aoc2023.day17
 
-import java.util.*
+import java.util.PriorityQueue
 import kotlin.math.min
 
 fun launchDay17(testCase: String) {
