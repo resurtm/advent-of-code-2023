@@ -20,7 +20,7 @@ private fun traverse3(grI: Grid, beginInp: Pos? = null, endInp: Pos? = null): In
     // while (!gr[end.row][end.col].visited) {
     while (true) {
         cnt++
-        if (cnt > 100)
+        if (cnt > 10000)
             break
 
         val ts = mutableListOf<Pos>()
