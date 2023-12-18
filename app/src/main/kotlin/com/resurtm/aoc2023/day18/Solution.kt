@@ -23,6 +23,13 @@ fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
     Dir.R -> pos.copy(col = pos.col + move.len)
 }
 
+fun getNextPosV2(pos: Pos, move: Move): Pos = when (move.dirV2) {
+    Dir.U -> pos.copy(row = pos.row - move.lenV2)
+    Dir.D -> pos.copy(row = pos.row + move.lenV2)
+    Dir.L -> pos.copy(col = pos.col - move.lenV2)
+    Dir.R -> pos.copy(col = pos.col + move.lenV2)
+}
+
 fun printGrid(g: Grid) {
     println("=====")
     g.grid.forEach { row ->
@@ -52,7 +59,16 @@ fun readMoves(testCase: String): List<Move> {
         val len = rawParts[1].toLong()
         val color = rawParts[2].trimStart('(', '#').trimEnd(')')
 
-        moves.add(Move(dir, len, color))
+        val lenV2 = color.substring(0, 5).toLong(radix = 16)
+        val dirV2 = when (color.substring(5, 6)[0]) {
+            '0' -> Dir.R
+            '1' -> Dir.D
+            '2' -> Dir.L
+            '3' -> Dir.U
+            else -> throw Exception("Invalid state, an unknown direction")
+        }
+
+        moves.add(Move(dir, len, color, lenV2, dirV2))
     }
 
     return moves
@@ -84,7 +100,7 @@ typealias GridData = MutableList<MutableList<Char>>
 
 data class MinMax(val min: Pos, val max: Pos)
 
-data class Move(val dir: Dir, val len: Long, val color: String)
+data class Move(val dir: Dir, val len: Long, val color: String, val lenV2: Long, var dirV2: Dir)
 
 data class Pos(val row: Long = 0L, val col: Long = 0L) {
     override fun toString(): String = "row=$row/col=$col"
@@ -116,7 +132,7 @@ data class Rect(
 fun findCommonArea(a: Rect, other: Rect, small: Boolean = false): Long {
     val minMax = findCommonMinMax(a, other)
     if (small)
-        return ((minMax.max.row- minMax.min.row) - 1) * ((minMax.max.col - minMax.min.col) - 1)
+        return ((minMax.max.row - minMax.min.row) - 1) * ((minMax.max.col - minMax.min.col) - 1)
     return ((minMax.max.row - minMax.min.row) + 1) * ((minMax.max.col - minMax.min.col) + 1)
 }
 

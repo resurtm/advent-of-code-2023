@@ -15,7 +15,7 @@ fun solvePart2Good(moves: List<Move>): Long {
     for (move in moves) {
         vertices.add(currPos)
 
-        val nextPos = getNextPos(currPos, move)
+        val nextPos = getNextPosV2(currPos, move)
         val newLine = Line(currPos, nextPos)
         var addArea = newLine.length
 
