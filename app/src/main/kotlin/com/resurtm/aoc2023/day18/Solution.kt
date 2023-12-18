@@ -3,7 +3,7 @@ package com.resurtm.aoc2023.day18
 fun launchDay18(testCase: String) {
     val moves = readMoves(testCase)
 
-     val part1 = solvePart1(moves)
+    val part1 = solvePart1(moves)
     // println("Day 18, part 1: $part1")
 
     val part2 = solvePart2(moves)
@@ -82,6 +82,11 @@ data class Move(val dir: Dir, val len: Long, val color: String)
 
 data class Pos(val row: Long = 0L, val col: Long = 0L) {
     override fun toString(): String = "row=$row/col=$col"
+
+    fun isInside(minMax: MinMax): Boolean {
+        return (this.row in minMax.min.row..minMax.max.row) &&
+                (this.col in minMax.min.col..minMax.max.col)
+    }
 }
 
 enum class Dir { U, D, L, R }

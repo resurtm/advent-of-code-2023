@@ -1,6 +1,7 @@
 package com.resurtm.aoc2023.day18
 
 fun solvePart2(moves: List<Move>): Int {
+    // part 1
     var borderArea = 0L
     var currPos = Pos()
     val lines = mutableListOf<Line>()
@@ -21,28 +22,74 @@ fun solvePart2(moves: List<Move>): Int {
 
     println(borderArea)
 
+    // part 2
+    var rectArea = 0L
+
     for (idx in 0..<lines.size - 2) {
-        if (!isInside(lines[idx], lines[idx + 1], lines[idx + 2])) continue
+        val isCw = areLinesCw(lines[idx], lines[idx + 1], lines[idx + 2])
+        val isCcw = areLinesCcw(lines[idx], lines[idx + 1], lines[idx + 2])
+        if (!isCw && !isCcw) continue
 
         val points = mutableListOf<Pos>()
         repeat(3) {
             points.add(lines[idx + it].head)
             points.add(lines[idx + it].tail)
         }
+        val minMax = findPointsMinMax(points)
+        // if (countLinesInMinMax(minMax, lines) !in arrayOf(4, 5)) continue
 
         println("=============")
-        println(findPointsMinMax(points))
+        println(minMax)
+        println(isCw)
+        println(isCcw)
+        println(minMax)
+        println(countLinesInMinMax(minMax, lines))
+
+        val addArea = (minMax.max.row - minMax.min.row) * (minMax.max.col - minMax.min.col)
+        rectArea += addArea
     }
+
+    println(rectArea)
 
     return 0
 }
 
-private fun isInside(l0: Line, l1: Line, l2: Line): Boolean {
-    val c0 = l0.head.col < l1.head.col && l2.tail.col < l1.head.col
+private fun areLinesCw(l0: Line, l1: Line, l2: Line): Boolean {
+    val c0 = false
+    //val c0 = l0.head.col < l1.head.col && l2.tail.col < l1.head.col
     val c1 = l0.head.col > l1.head.col && l2.tail.col > l1.head.col
-    val c2 = l0.head.row < l1.head.row && l2.tail.row < l1.head.row
+    //val c2 = l0.head.row < l1.head.row && l2.tail.row < l1.head.row
+    val c2 = false
     val c3 = l0.head.row > l1.head.row && l2.tail.row > l1.head.row
     return c0 || c1 || c2 || c3
+}
+
+private fun areLinesCcw(l0: Line, l1: Line, l2: Line): Boolean {
+    val c0 = l0.head.col < l1.head.col && l2.tail.col < l1.head.col
+    //val c1 = l0.head.col > l1.head.col && l2.tail.col > l1.head.col
+    val c1 = false
+    val c2 = l0.head.row < l1.head.row && l2.tail.row < l1.head.row
+    //val c3 = l0.head.row > l1.head.row && l2.tail.row > l1.head.row
+    val c3 = false
+    return c0 || c1 || c2 || c3
+}
+
+private fun countLinesInMinMax(minMax: MinMax, lines: List<Line>): Int {
+    val line0 = Line(Pos(minMax.min.row, minMax.min.col), Pos(minMax.max.row, minMax.min.col))
+    val line1 = Line(Pos(minMax.max.row, minMax.max.col), Pos(minMax.max.row, minMax.min.col))
+    val line2 = Line(Pos(minMax.max.row, minMax.max.col), Pos(minMax.min.row, minMax.max.col))
+    val line3 = Line(Pos(minMax.min.row, minMax.min.col), Pos(minMax.min.row, minMax.max.col))
+
+    var result = 0
+    for (line in lines) {
+        if (line.start.isInside(minMax) || line.end.isInside(minMax)) {
+            result++; continue
+        }
+        if (line.intersects(line0) || line.intersects(line1) || line.intersects(line2) || line.intersects(line3)) {
+            result++; continue
+        }
+    }
+    return result
 }
 
 private fun findPointsMinMax(points: List<Pos>): MinMax {
