@@ -14,10 +14,10 @@ fun solvePart1(moves: List<Move>): Int {
 
     fillGridBorders(moves, grid)
     printGrid(grid)
-    println(countFilled(grid))
+    println("Debug: ${countFilled(grid)}")
 
     fillGridInside(grid)
-    println(countFilled(grid))
+    println("Debug: ${countFilled(grid)}")
 
     return countFilled(grid)
 }

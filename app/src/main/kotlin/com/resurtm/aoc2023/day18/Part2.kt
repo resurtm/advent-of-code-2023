@@ -20,10 +20,10 @@ fun solvePart2(moves: List<Move>): Int {
         lines.add(newLine)
     }
 
-    println(borderArea)
+    println("Debug: $borderArea")
 
     // part 2
-    var rectArea = 0L
+    val rects = mutableListOf<Rect>()
 
     for (idx in 0..<lines.size - 2) {
         val isCw = areLinesCw(lines[idx], lines[idx + 1], lines[idx + 2])
@@ -35,22 +35,43 @@ fun solvePart2(moves: List<Move>): Int {
             points.add(lines[idx + it].head)
             points.add(lines[idx + it].tail)
         }
+
         val minMax = findPointsMinMax(points)
-        // if (countLinesInMinMax(minMax, lines) !in arrayOf(4, 5)) continue
+        val linesInMinMax = countLinesInMinMax(minMax, lines)
 
-        println("=============")
-        println(minMax)
-        println(isCw)
-        println(isCcw)
-        println(minMax)
-        println(countLinesInMinMax(minMax, lines))
-
-        val addArea = (minMax.max.row - minMax.min.row) * (minMax.max.col - minMax.min.col)
-        rectArea += addArea
+        rects.add(Rect(minMax, isCw, isCcw, linesInMinMax, lines = listOf(lines[idx], lines[idx + 1], lines[idx + 2])))
     }
 
-    println(rectArea)
+    var fillArea = 0L
 
+    main@ for (i in 0..<rects.size) {
+        val rect0 = rects[i]
+        if (rect0.checked || rect0.isCw) continue
+        rect0.checked = true
+
+        var addFillArea = rect0.area
+
+        for (j in 0..<rects.size) {
+            val rect1 = rects[j]
+            if (rect1.checked) continue
+            rect1.checked = true
+
+            if (rect1.isCcw) {
+                val localArea = rect1.area - findCommonArea(rect0, rect1)
+                addFillArea += localArea
+                println(localArea)
+            } else if (rect1.isCw) {
+                val localArea = -findCommonArea(rect0, rect1, small = true)
+                addFillArea += localArea
+                println(localArea)
+            }
+            // break@main
+        }
+
+        fillArea += addFillArea
+    }
+
+    println("Result: $fillArea")
     return 0
 }
 
@@ -74,13 +95,13 @@ private fun areLinesCcw(l0: Line, l1: Line, l2: Line): Boolean {
     return c0 || c1 || c2 || c3
 }
 
-private fun countLinesInMinMax(minMax: MinMax, lines: List<Line>): Int {
+private fun countLinesInMinMax(minMax: MinMax, lines: List<Line>): Long {
     val line0 = Line(Pos(minMax.min.row, minMax.min.col), Pos(minMax.max.row, minMax.min.col))
     val line1 = Line(Pos(minMax.max.row, minMax.max.col), Pos(minMax.max.row, minMax.min.col))
     val line2 = Line(Pos(minMax.max.row, minMax.max.col), Pos(minMax.min.row, minMax.max.col))
     val line3 = Line(Pos(minMax.min.row, minMax.min.col), Pos(minMax.min.row, minMax.max.col))
 
-    var result = 0
+    var result = 0L
     for (line in lines) {
         if (line.start.isInside(minMax) || line.end.isInside(minMax)) {
             result++; continue
@@ -103,28 +124,4 @@ private fun findPointsMinMax(points: List<Pos>): MinMax {
         if (it.col > max.col) max = max.copy(col = it.col)
     }
     return MinMax(min, max)
-}
-
-private data class Line(val head: Pos, val tail: Pos) {
-    val start: Pos
-    val end: Pos
-    val length: Long
-
-    init {
-        val cmp = head.row < tail.row || head.col < tail.col
-        this.start = if (cmp) head else tail
-        this.end = if (cmp) tail else head
-
-        this.length = if (start.row == end.row) (end.col - start.col + 1) else (end.row - start.row + 1)
-    }
-
-    fun intersects(line: Line): Boolean {
-        val c1 = (this.start.row in line.start.row..line.end.row) &&
-                (line.start.col in this.start.col..this.end.col)
-        val c2 = (line.start.row in this.start.row..this.end.row) &&
-                (this.start.col in line.start.col..line.end.col)
-        return c1 || c2
-    }
-
-    override fun toString(): String = "start($start) & end($end) & len($length)"
 }

@@ -1,5 +1,8 @@
 package com.resurtm.aoc2023.day18
 
+import kotlin.math.max
+import kotlin.math.min
+
 fun launchDay18(testCase: String) {
     val moves = readMoves(testCase)
 
@@ -90,3 +93,71 @@ data class Pos(val row: Long = 0L, val col: Long = 0L) {
 }
 
 enum class Dir { U, D, L, R }
+
+data class Rect(
+    val minMax: MinMax,
+    val isCw: Boolean = false,
+    val isCcw: Boolean = false,
+    val linesInMinMax: Long = 0L,
+    var checked: Boolean = false,
+    val lines: List<Line> = emptyList(),
+) {
+    val area = ((minMax.max.row - minMax.min.row) + 1) * ((minMax.max.col - minMax.min.col) + 1)
+
+    fun isOtherInside(other: Rect): Boolean {
+        return (this.minMax.min.row <= other.minMax.min.row && this.minMax.min.col <= other.minMax.min.col)
+                && (this.minMax.max.row >= other.minMax.max.row && this.minMax.max.col >= other.minMax.max.col)
+    }
+}
+
+fun findCommonArea(a: Rect, other: Rect, small: Boolean = false): Long {
+    val minMax = findCommonMinMax(a, other)
+    if (small)
+        return ((minMax.max.row- minMax.min.row) - 1) * ((minMax.max.col - minMax.min.col) - 1)
+    return ((minMax.max.row - minMax.min.row) + 1) * ((minMax.max.col - minMax.min.col) + 1)
+}
+
+/*fun findCommonArea(a: MinMax, other: MinMax): Long {
+    val minMax = findCommonMinMax(a, other)
+    return ((minMax.max.row - minMax.min.row) + 1) * ((minMax.max.col - minMax.min.col) + 1)
+}*/
+
+fun findCommonMinMax(a: Rect, other: Rect): MinMax {
+    val row0 = max(a.minMax.min.row, other.minMax.min.row)
+    val col0 = max(a.minMax.min.col, other.minMax.min.col)
+    val row1 = min(a.minMax.max.row, other.minMax.max.row)
+    val col1 = min(a.minMax.max.col, other.minMax.max.col)
+    return MinMax(Pos(row0, col0), Pos(row1, col1))
+}
+
+fun findCommonMinMax(a: MinMax, other: MinMax): MinMax {
+    val row0 = max(a.min.row, other.min.row)
+    val col0 = max(a.min.col, other.min.col)
+    val row1 = min(a.max.row, other.max.row)
+    val col1 = min(a.max.col, other.max.col)
+    return MinMax(Pos(row0, col0), Pos(row1, col1))
+}
+
+data class Line(val head: Pos, val tail: Pos) {
+    val start: Pos
+    val end: Pos
+    val length: Long
+
+    init {
+        val cmp = head.row < tail.row || head.col < tail.col
+        this.start = if (cmp) head else tail
+        this.end = if (cmp) tail else head
+
+        this.length = if (start.row == end.row) (end.col - start.col + 1) else (end.row - start.row + 1)
+    }
+
+    fun intersects(line: Line): Boolean {
+        val c1 = (this.start.row in line.start.row..line.end.row) &&
+                (line.start.col in this.start.col..this.end.col)
+        val c2 = (line.start.row in this.start.row..this.end.row) &&
+                (this.start.col in line.start.col..line.end.col)
+        return c1 || c2
+    }
+
+    override fun toString(): String = "start($start) & end($end) & len($length)"
+}
