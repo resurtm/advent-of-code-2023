@@ -10,7 +10,14 @@ fun launchDay18(testCase: String) {
     println("Day 18, part 2: $part2")
 }
 
-private fun printGrid(g: Grid) {
+fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
+    Dir.U -> pos.copy(row = pos.row - move.len)
+    Dir.D -> pos.copy(row = pos.row + move.len)
+    Dir.L -> pos.copy(col = pos.col - move.len)
+    Dir.R -> pos.copy(col = pos.col + move.len)
+}
+
+fun printGrid(g: Grid) {
     println("=====")
     g.grid.forEach { row ->
         row.forEach { print(it) }
@@ -36,7 +43,7 @@ fun readMoves(testCase: String): List<Move> {
             'R' -> Dir.R
             else -> throw Exception("Invalid state, an unknown direction")
         }
-        val len = rawParts[1].toInt()
+        val len = rawParts[1].toLong()
         val color = rawParts[2].trimStart('(', '#').trimEnd(')')
 
         moves.add(Move(dir, len, color))
@@ -46,16 +53,16 @@ fun readMoves(testCase: String): List<Move> {
 }
 
 data class Grid(val grid: GridData, val delta: Pos) {
-    fun set(row: Int, col: Int, ch: Char) {
-        grid[row + delta.row][col + delta.col] = ch
+    fun set(row: Long, col: Long, ch: Char) {
+        grid[(row + delta.row).toInt()][(col + delta.col).toInt()] = ch
     }
 
     fun set(pos: Pos, ch: Char) {
         set(pos.row, pos.col, ch)
     }
 
-    fun get(row: Int, col: Int): Char {
-        return grid[row + delta.row][col + delta.col]
+    fun get(row: Long, col: Long): Char {
+        return grid[(row + delta.row).toInt()][(col + delta.col).toInt()]
     }
 
     fun minPos(): Pos {
@@ -71,8 +78,8 @@ typealias GridData = MutableList<MutableList<Char>>
 
 data class MinMax(val min: Pos, val max: Pos)
 
-data class Move(val dir: Dir, val len: Int, val color: String)
+data class Move(val dir: Dir, val len: Long, val color: String)
 
-data class Pos(val row: Int = 0, val col: Int = 0)
+data class Pos(val row: Long = 0L, val col: Long = 0L)
 
 enum class Dir { U, D, L, R }

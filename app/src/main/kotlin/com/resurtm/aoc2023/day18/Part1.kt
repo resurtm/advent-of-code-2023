@@ -94,9 +94,9 @@ private fun fillGridBorders(moves: List<Move>, grid: Grid) {
 
 private fun buildGrid(size: Pos): GridData {
     val grid: GridData = mutableListOf()
-    repeat(size.row) {
+    repeat(size.row.toInt()) {
         val items = mutableListOf<Char>()
-        repeat(size.col) { items.add('.') }
+        repeat(size.col.toInt()) { items.add('.') }
         grid.add(items)
     }
     return grid
@@ -117,11 +117,4 @@ private fun findMinMax(moves: List<Move>): MinMax {
     }
 
     return MinMax(min, max)
-}
-
-private fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
-    Dir.U -> pos.copy(row = pos.row - move.len)
-    Dir.D -> pos.copy(row = pos.row + move.len)
-    Dir.L -> pos.copy(col = pos.col - move.len)
-    Dir.R -> pos.copy(col = pos.col + move.len)
 }
