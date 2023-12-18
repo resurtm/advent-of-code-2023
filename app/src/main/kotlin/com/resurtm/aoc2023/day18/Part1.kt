@@ -13,6 +13,7 @@ fun solvePart1(moves: List<Move>): Int {
     val grid = Grid(buildGrid(size), delta)
 
     fillGridBorders(moves, grid)
+    printGrid(grid)
     println(countFilled(grid))
 
     fillGridInside(grid)
