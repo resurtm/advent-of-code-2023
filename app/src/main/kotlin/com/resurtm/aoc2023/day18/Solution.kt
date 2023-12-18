@@ -15,9 +15,17 @@ fun solvePart1(moves: List<Move>) {
     )
     val delta = Pos(-minMax.min.row, -minMax.min.col)
 
-    val grid = buildGrid(size)
+    val grid = Grid(buildGrid(size), delta)
     fillGrid(moves, grid)
     printGrid(grid)
+
+    var count = 0
+    for (row in grid.grid.indices) {
+        for (col in grid.grid[row].indices) {
+            if (grid.grid[row][col] == '#') count++
+        }
+    }
+    println(count)
 }
 
 private fun fillGrid(moves: List<Move>, grid: Grid) {
@@ -28,15 +36,15 @@ private fun fillGrid(moves: List<Move>, grid: Grid) {
 
         if (nextPos.row == curr.row) {
             if (nextPos.col > curr.col) {
-                for (col in curr.col..nextPos.col) grid[curr.row][col] = '#'
+                for (col in curr.col..nextPos.col) grid.set(curr.row, col, '#')
             } else if (nextPos.col < curr.col) {
-                for (col in nextPos.col..curr.col) grid[curr.row][col] = '#'
+                for (col in nextPos.col..curr.col) grid.set(curr.row, col, '#')
             } else throw Exception("Invalid state, zero step moves are not supported")
         } else if (nextPos.col == curr.col) {
             if (nextPos.row > curr.row) {
-                for (row in curr.row..nextPos.row) grid[row][curr.col] = '#'
+                for (row in curr.row..nextPos.row) grid.set(row, curr.col, '#')
             } else if (nextPos.row < curr.row) {
-                for (row in nextPos.row..curr.row) grid[row][curr.col] = '#'
+                for (row in nextPos.row..curr.row) grid.set(row, curr.col, '#')
             } else throw Exception("Invalid state, zero step moves are not supported")
         } else throw Exception("Invalid state, diagonal moves are not supported")
 
@@ -44,8 +52,8 @@ private fun fillGrid(moves: List<Move>, grid: Grid) {
     }
 }
 
-private fun buildGrid(size: Pos): Grid {
-    val grid: Grid = mutableListOf()
+private fun buildGrid(size: Pos): GridData {
+    val grid: GridData = mutableListOf()
     repeat(size.row) {
         val items = mutableListOf<Char>()
         repeat(size.col) { items.add('.') }
@@ -78,9 +86,9 @@ private fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
     Dir.R -> pos.copy(col = pos.col + move.len)
 }
 
-private fun printGrid(grid: Grid) {
+private fun printGrid(g: Grid) {
     println("=====")
-    grid.forEach { row ->
+    g.grid.forEach { row ->
         row.forEach { print(it) }
         println()
     }
@@ -113,7 +121,13 @@ fun readMoves(testCase: String): List<Move> {
     return moves
 }
 
-typealias Grid = MutableList<MutableList<Char>>
+data class Grid(val grid: GridData, val delta: Pos) {
+    fun set(row: Int, col: Int, ch: Char) {
+        grid[row + delta.row][col + delta.col] = ch
+    }
+}
+
+typealias GridData = MutableList<MutableList<Char>>
 
 data class MinMax(val min: Pos, val max: Pos)
 
