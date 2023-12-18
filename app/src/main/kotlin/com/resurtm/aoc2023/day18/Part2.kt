@@ -1,40 +1,39 @@
 package com.resurtm.aoc2023.day18
 
 fun solvePart2(moves: List<Move>): Int {
-    var area = 0L
-    var curr = Pos()
+    var totalArea = 0L
+    var currPos = Pos()
     val lines = mutableListOf<Line>()
 
     for (move in moves) {
-        val next = getNextPos(curr, move)
+        val nextPos = getNextPos(currPos, move)
+        val newLine = Line(currPos, nextPos)
+        var addArea = newLine.length
 
-        val newLine = Line(curr, next)
-        var newLineLen = newLine.length
-        for (otherLine in lines) {
-            if (newLine.intersects(otherLine)) newLineLen--
+        lines.forEach {
+            if (newLine.intersects(it)) addArea--
         }
 
-        area += if (newLineLen > 0) newLineLen else 0
-        curr = next
+        totalArea += addArea
+        currPos = nextPos
         lines.add(newLine)
     }
 
-    println(area)
+    println(totalArea)
     return 0
 }
 
 private data class Line(private val p0: Pos, private val p1: Pos) {
-    var start: Pos
-    var end: Pos
-    var length: Long
+    val start: Pos
+    val end: Pos
+    val length: Long
 
     init {
         val cmp = p0.row < p1.row || p0.col < p1.col
         this.start = if (cmp) p0 else p1
         this.end = if (cmp) p1 else p0
 
-        this.length = if (start.row == end.row) (end.col - start.col) else (end.row - start.row)
-        this.length++
+        this.length = if (start.row == end.row) (end.col - start.col + 1) else (end.row - start.row + 1)
     }
 
     fun intersects(line: Line): Boolean {
@@ -45,5 +44,5 @@ private data class Line(private val p0: Pos, private val p1: Pos) {
         return c1 || c2
     }
 
-    override fun toString(): String = "$start - $end - $length"
+    override fun toString(): String = "start($start) & end($end) & len($length)"
 }
