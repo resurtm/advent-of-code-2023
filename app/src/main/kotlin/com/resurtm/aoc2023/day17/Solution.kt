@@ -2,11 +2,27 @@ package com.resurtm.aoc2023.day17
 
 import java.util.PriorityQueue
 import kotlin.math.min
+import kotlin.system.measureTimeMillis
 
 fun launchDay17(testCase: String) {
     val grid = readInputGrid(testCase)
-    println("Day 17, part 1: ${traverse(grid)}")
-    println("Day 17, part 2: ${traverse(grid, minSize = 4, maxSize = 10)}")
+    val iters = 10
+
+    var part1 = 0
+    val part1msec = measureTimeMillis {
+        repeat(iters) {
+            part1 = traverse(grid)
+        }
+    }
+    println("Day 17, part 1: ${part1}, ${part1msec / iters}")
+
+    var part2 = 0
+    val part2msec = measureTimeMillis {
+        repeat(iters) {
+            part2 = traverse(grid, minSize = 4, maxSize = 10)
+        }
+    }
+    println("Day 17, part 2: ${part2}, ${part2msec / iters}")
 }
 
 private fun traverse(gr: Grid, beginInp: Pos? = null, endInp: Pos? = null, minSize: Int = 0, maxSize: Int = 4): Int {
