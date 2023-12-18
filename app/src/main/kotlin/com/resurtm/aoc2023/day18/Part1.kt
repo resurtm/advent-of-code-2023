@@ -13,11 +13,11 @@ fun solvePart1(moves: List<Move>): Int {
     val grid = Grid(buildGrid(size), delta)
 
     fillGridBorders(moves, grid)
-    printGrid(grid)
-    println("Debug: ${countFilled(grid)}")
+    // printGrid(grid)
+    // println("Debug: ${countFilled(grid)}")
 
     fillGridInside(grid)
-    println("Debug: ${countFilled(grid)}")
+    // println("Debug: ${countFilled(grid)}")
 
     return countFilled(grid)
 }

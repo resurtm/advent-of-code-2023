@@ -7,10 +7,13 @@ fun launchDay18(testCase: String) {
     val moves = readMoves(testCase)
 
     val part1 = solvePart1(moves)
-    // println("Day 18, part 1: $part1")
+    println("Day 18, part 1: $part1")
 
-    val part2 = solvePart2(moves)
+    // val part2 = solvePart2(moves)
     // println("Day 18, part 2: $part2")
+
+    val part2good = solvePart2Good(moves)
+    println("Day 18, part 2: $part2good")
 }
 
 fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
