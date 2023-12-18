@@ -3,10 +3,11 @@ package com.resurtm.aoc2023.day18
 import kotlin.math.abs
 
 fun launchDay18(testCase: String) {
-    solvePart1(readMoves(testCase))
+    val part1 = solvePart1(readMoves(testCase))
+    println("Day 18, part 1: $part1")
 }
 
-fun solvePart1(moves: List<Move>) {
+fun solvePart1(moves: List<Move>): Int {
     val minMax = findMinMax(moves)
 
     val size = Pos(
@@ -14,21 +15,65 @@ fun solvePart1(moves: List<Move>) {
         abs(minMax.min.col) + abs(minMax.max.col) + 1
     )
     val delta = Pos(-minMax.min.row, -minMax.min.col)
-
     val grid = Grid(buildGrid(size), delta)
-    fillGrid(moves, grid)
-    printGrid(grid)
 
+    fillGridBorders(moves, grid)
+    fillGridInside(grid)
+    return countFilled(grid)
+}
+
+private fun fillGridInside(g: Grid) {
+    val queue = ArrayDeque<Pos>()
+    queue.add(findStartPos(g))
+
+    while (queue.isNotEmpty()) {
+        val curr = queue.removeFirst()
+        val next = findNextPos(curr, g)
+        queue.addAll(next)
+        g.set(curr, '#')
+        next.forEach {
+            g.set(it, '#')
+        }
+    }
+}
+
+private fun findNextPos(pos: Pos, g: Grid): List<Pos> {
+    val result = mutableListOf<Pos>()
+    if (g.get(pos.row - 1, pos.col) != '#')
+        result.add(pos.copy(row = pos.row - 1))
+    if (g.get(pos.row + 1, pos.col) != '#')
+        result.add(pos.copy(row = pos.row + 1))
+    if (g.get(pos.row, pos.col - 1) != '#')
+        result.add(pos.copy(col = pos.col - 1))
+    if (g.get(pos.row, pos.col + 1) != '#')
+        result.add(pos.copy(col = pos.col + 1))
+    return result
+}
+
+private fun findStartPos(g: Grid): Pos {
+    var startPos = Pos()
+    startPosLoop@ for (row in g.minPos().row..g.maxPos().row) {
+        for (col in g.minPos().col..g.maxPos().col) {
+            if (g.get(row, col) == '#' && g.get(row + 1, col) == '#' && g.get(row, col + 1) == '#') {
+                startPos = Pos(row + 1, col + 1)
+                break@startPosLoop
+            }
+        }
+    }
+    return startPos
+}
+
+private fun countFilled(grid: Grid): Int {
     var count = 0
     for (row in grid.grid.indices) {
         for (col in grid.grid[row].indices) {
             if (grid.grid[row][col] == '#') count++
         }
     }
-    println(count)
+    return count
 }
 
-private fun fillGrid(moves: List<Move>, grid: Grid) {
+private fun fillGridBorders(moves: List<Move>, grid: Grid) {
     var curr = Pos()
 
     for (move in moves) {
@@ -124,6 +169,22 @@ fun readMoves(testCase: String): List<Move> {
 data class Grid(val grid: GridData, val delta: Pos) {
     fun set(row: Int, col: Int, ch: Char) {
         grid[row + delta.row][col + delta.col] = ch
+    }
+
+    fun set(pos: Pos, ch: Char) {
+        set(pos.row, pos.col, ch)
+    }
+
+    fun get(row: Int, col: Int): Char {
+        return grid[row + delta.row][col + delta.col]
+    }
+
+    fun minPos(): Pos {
+        return Pos(-delta.row, -delta.col)
+    }
+
+    fun maxPos(): Pos {
+        return Pos(grid.size - delta.row, grid[0].size - delta.col)
     }
 }
 
