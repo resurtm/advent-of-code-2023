@@ -9,16 +9,49 @@ fun launchDay18(testCase: String) {
 fun solvePart1(moves: List<Move>) {
     val minMax = findMinMax(moves)
 
-    val size = Pos(abs(minMax.min.row) + abs(minMax.max.row), abs(minMax.min.col) + abs(minMax.max.col))
+    val size = Pos(
+        abs(minMax.min.row) + abs(minMax.max.row) + 1,
+        abs(minMax.min.col) + abs(minMax.max.col) + 1
+    )
     val delta = Pos(-minMax.min.row, -minMax.min.col)
 
+    val grid = buildGrid(size)
+    fillGrid(moves, grid)
+    printGrid(grid)
+}
+
+private fun fillGrid(moves: List<Move>, grid: Grid) {
+    var curr = Pos()
+
+    for (move in moves) {
+        val nextPos = getNextPos(curr, move)
+
+        if (nextPos.row == curr.row) {
+            if (nextPos.col > curr.col) {
+                for (col in curr.col..nextPos.col) grid[curr.row][col] = '#'
+            } else if (nextPos.col < curr.col) {
+                for (col in nextPos.col..curr.col) grid[curr.row][col] = '#'
+            } else throw Exception("Invalid state, zero step moves are not supported")
+        } else if (nextPos.col == curr.col) {
+            if (nextPos.row > curr.row) {
+                for (row in curr.row..nextPos.row) grid[row][curr.col] = '#'
+            } else if (nextPos.row < curr.row) {
+                for (row in nextPos.row..curr.row) grid[row][curr.col] = '#'
+            } else throw Exception("Invalid state, zero step moves are not supported")
+        } else throw Exception("Invalid state, diagonal moves are not supported")
+
+        curr = nextPos
+    }
+}
+
+private fun buildGrid(size: Pos): Grid {
     val grid: Grid = mutableListOf()
     repeat(size.row) {
         val items = mutableListOf<Char>()
         repeat(size.col) { items.add('.') }
         grid.add(items)
     }
-    printGrid(grid)
+    return grid
 }
 
 private fun findMinMax(moves: List<Move>): MinMax {
@@ -41,7 +74,7 @@ private fun findMinMax(moves: List<Move>): MinMax {
 private fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
     Dir.U -> pos.copy(row = pos.row - move.len)
     Dir.D -> pos.copy(row = pos.row + move.len)
-    Dir.L -> pos.copy(col = pos.col + move.len)
+    Dir.L -> pos.copy(col = pos.col - move.len)
     Dir.R -> pos.copy(col = pos.col + move.len)
 }
 
