@@ -3,11 +3,11 @@ package com.resurtm.aoc2023.day18
 fun launchDay18(testCase: String) {
     val moves = readMoves(testCase)
 
-    val part1 = solvePart1(moves)
-    println("Day 18, part 1: $part1")
+     val part1 = solvePart1(moves)
+    // println("Day 18, part 1: $part1")
 
     val part2 = solvePart2(moves)
-    println("Day 18, part 2: $part2")
+    // println("Day 18, part 2: $part2")
 }
 
 fun getNextPos(pos: Pos, move: Move): Pos = when (move.dir) {
@@ -80,6 +80,8 @@ data class MinMax(val min: Pos, val max: Pos)
 
 data class Move(val dir: Dir, val len: Long, val color: String)
 
-data class Pos(val row: Long = 0L, val col: Long = 0L)
+data class Pos(val row: Long = 0L, val col: Long = 0L) {
+    override fun toString(): String = "row=$row/col=$col"
+}
 
 enum class Dir { U, D, L, R }
