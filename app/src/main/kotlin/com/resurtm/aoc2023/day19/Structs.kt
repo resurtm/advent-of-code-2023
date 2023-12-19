@@ -1,6 +1,6 @@
 package com.resurtm.aoc2023.day19
 
-internal data class Input(val rules: List<Rule>)
+internal data class Input(val rules: List<Rule>, val workflows: List<Workflow>)
 
 internal data class Rule(val name: String, val conditions: List<Condition>)
 

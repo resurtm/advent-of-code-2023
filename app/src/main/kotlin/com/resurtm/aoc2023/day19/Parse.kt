@@ -6,17 +6,19 @@ internal fun readInput(testCase: String): Input {
             ?: throw Exception("Cannot read an input, probably an invalid input provided")
 
     val rules = mutableListOf<Rule>()
+    val workflows = mutableListOf<Workflow>()
+
     while (true) {
         val rawLine = (reader.readLine() ?: break).trim()
         if (rawLine.isEmpty()) continue
 
-        if (rawLine.firstOrNull() == '{') {
-
-        } else {
-
-        }
+        if (rawLine.firstOrNull() == '{')
+            workflows.add(parseWorkflow(rawLine))
+        else if (rawLine.firstOrNull() != '{')
+            rules.add(parseRule(rawLine))
     }
-    return Input(rules)
+
+    return Input(rules, workflows)
 }
 
 internal fun parseRule(line: String): Rule {
