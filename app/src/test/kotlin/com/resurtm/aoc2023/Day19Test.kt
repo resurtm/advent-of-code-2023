@@ -31,4 +31,11 @@ class Day19Test {
         val actual = parseWorkflow("{x=787,m=2655,a=1222,s=2876}")
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun canSolvePart1() {
+        val expected = 19114L
+        val actual = solvePart1(readInput("/day19/test-case.txt"))
+        assertEquals(expected, actual)
+    }
 }

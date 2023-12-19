@@ -2,10 +2,13 @@ package com.resurtm.aoc2023.day19
 
 fun launchDay19(testCase: String) {
     val input = readInput(testCase)
-    input.workflows.forEach { traverseWorkflow(it, input.rules) }
+    println("Day 19, part 1: ${solvePart1(input)}")
 }
 
-private fun traverseWorkflow(workflow: Workflow, rules: Map<String, Rule>) {
+internal fun solvePart1(input: Input): Long =
+    input.workflows.fold(0L) { acc, it -> acc + traverseWorkflow(it, input.rules) }
+
+private fun traverseWorkflow(workflow: Workflow, rules: Map<String, Rule>): Long {
     var curr = "in"
 
     while (curr !in arrayOf("A", "R")) {
@@ -38,5 +41,5 @@ private fun traverseWorkflow(workflow: Workflow, rules: Map<String, Rule>) {
         }
     }
 
-    println(curr)
+    return if (curr == "A") workflow.findSum() else 0
 }

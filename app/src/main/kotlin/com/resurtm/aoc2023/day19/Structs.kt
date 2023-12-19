@@ -40,4 +40,6 @@ internal enum class CompOp(val value: Char) {
     }
 }
 
-internal data class Workflow(val entries: Map<Token, Long>)
+internal data class Workflow(val entries: Map<Token, Long>) {
+    fun findSum(): Long = entries.values.reduce { acc, x -> acc + x }
+}
