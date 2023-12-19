@@ -43,3 +43,51 @@ internal enum class CompOp(val value: Char) {
 internal data class Workflow(val entries: Map<Token, Long>) {
     fun findSum(): Long = entries.values.reduce { acc, x -> acc + x }
 }
+
+internal data class Slice(
+    val rule: String,
+    val x: LongRange, val m: LongRange, val a: LongRange, val s: LongRange
+) {
+    fun isEmpty(): Boolean = x.isEmpty() && m.isEmpty() && a.isEmpty() && s.isEmpty()
+
+    fun split(c: Condition.Full): Pair<Slice, Slice> = when (c.compOp) {
+        CompOp.Less -> {
+            val sl0 = Slice(
+                rule = c.nextRule,
+                x = if (c.token == Token.X) x.first..<c.compVal else x,
+                m = if (c.token == Token.M) m.first..<c.compVal else m,
+                a = if (c.token == Token.A) a.first..<c.compVal else a,
+                s = if (c.token == Token.S) s.first..<c.compVal else s,
+            )
+            val sl1 = Slice(
+                rule = "",
+                x = if (c.token == Token.X) c.compVal..x.last else x,
+                m = if (c.token == Token.M) c.compVal..m.last else m,
+                a = if (c.token == Token.A) c.compVal..a.last else a,
+                s = if (c.token == Token.S) c.compVal..s.last else s,
+            )
+            Pair(sl0, sl1)
+        }
+
+        CompOp.Greater -> {
+            val sl0 = Slice(
+                rule = c.nextRule,
+                x = if (c.token == Token.X) c.compVal + 1..x.last else x,
+                m = if (c.token == Token.M) c.compVal + 1..m.last else m,
+                a = if (c.token == Token.A) c.compVal + 1..a.last else a,
+                s = if (c.token == Token.S) c.compVal + 1..s.last else s,
+            )
+            val sl1 = Slice(
+                rule = "",
+                x = if (c.token == Token.X) x.first..c.compVal else x,
+                m = if (c.token == Token.M) m.first..c.compVal else m,
+                a = if (c.token == Token.A) a.first..c.compVal else a,
+                s = if (c.token == Token.S) s.first..c.compVal else s,
+            )
+            Pair(sl0, sl1)
+        }
+    }
+
+    fun findSum(): Long =
+        (x.last - x.first + 1) * (m.last - m.first + 1) * (a.last - a.first + 1) * (s.last - s.first + 1)
+}
