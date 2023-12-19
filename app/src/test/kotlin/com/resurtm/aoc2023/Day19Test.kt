@@ -38,4 +38,11 @@ class Day19Test {
         val actual = solvePart1(readInput("/day19/test-case.txt"))
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun canSolvePart2() {
+        val expected = 167409079868000L
+        val actual = solvePart2(readInput("/day19/test-case.txt"))
+        assertEquals(expected, actual)
+    }
 }
