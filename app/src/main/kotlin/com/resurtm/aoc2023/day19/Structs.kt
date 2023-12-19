@@ -1,6 +1,6 @@
 package com.resurtm.aoc2023.day19
 
-internal data class Input(val rules: List<Rule>, val workflows: List<Workflow>)
+internal data class Input(val rules: Map<String, Rule>, val workflows: List<Workflow>)
 
 internal data class Rule(val name: String, val conditions: List<Condition>)
 
@@ -40,6 +40,4 @@ internal enum class CompOp(val value: Char) {
     }
 }
 
-internal data class Workflow(val entries: List<Entry>)
-
-internal data class Entry(val token: Token, val compVal: Long)
+internal data class Workflow(val entries: Map<Token, Long>)

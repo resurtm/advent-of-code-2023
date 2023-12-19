@@ -5,7 +5,7 @@ internal fun readInput(testCase: String): Input {
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Cannot read an input, probably an invalid input provided")
 
-    val rules = mutableListOf<Rule>()
+    val rules = mutableMapOf<String, Rule>()
     val workflows = mutableListOf<Workflow>()
 
     while (true) {
@@ -14,8 +14,10 @@ internal fun readInput(testCase: String): Input {
 
         if (rawLine.firstOrNull() == '{')
             workflows.add(parseWorkflow(rawLine))
-        else if (rawLine.firstOrNull() != '{')
-            rules.add(parseRule(rawLine))
+        else if (rawLine.firstOrNull() != '{') {
+            val rule = parseRule(rawLine)
+            rules[rule.name] = rule
+        }
     }
 
     return Input(rules, workflows)
@@ -52,9 +54,10 @@ internal fun parseWorkflow(line: String): Workflow {
         throw Exception("An invalid workflow passed for parse")
 
     val parts0 = line.trim('{', '}').split(',').map { it.trim() }
-    val entries = parts0.map {
+    val entries = mutableMapOf<Token, Long>()
+    parts0.forEach {
         val parts1 = it.split('=')
-        Entry(token = Token.fromValue(parts1[0][0]), compVal = parts1[1].toLong())
+        entries[Token.fromValue(parts1[0][0])] = parts1[1].toLong()
     }
 
     return Workflow(entries = entries)

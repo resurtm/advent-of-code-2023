@@ -21,11 +21,11 @@ class Day19Test {
     @Test
     fun canParseWorkflow() {
         val expected = Workflow(
-            entries = listOf(
-                Entry(token = Token.X, compVal = 787),
-                Entry(token = Token.M, compVal = 2655),
-                Entry(token = Token.A, compVal = 1222),
-                Entry(token = Token.S, compVal = 2876),
+            entries = mapOf(
+                Token.X to 787,
+                Token.M to 2655,
+                Token.A to 1222,
+                Token.S to 2876,
             ),
         )
         val actual = parseWorkflow("{x=787,m=2655,a=1222,s=2876}")
