@@ -39,7 +39,8 @@ internal fun pushButton(mods: Map<String, Mod>): PulseInfo {
     while (queue.isNotEmpty()) {
         val qItem = queue.pollFirst()
             ?: throw Exception("Queue should not be empty here")
-        val nextMods = mods.values.filter { it.name in qItem.mod.next }
+        val nextMods = mods.values.filter { it.name in qItem.mod.next } +
+                if (qItem.mod.next.contains("output")) listOf(Mod('o', "output")) else emptyList()
 
         val toAdd = mutableListOf<QueueItem>()
         if (qItem.mod.type == 'b') {
@@ -57,11 +58,11 @@ internal fun pushButton(mods: Map<String, Mod>): PulseInfo {
             throw Exception("Invalid queue item detected, cannot work on it")
         }
 
-        queue.addAll(toAdd)
         toAdd.forEach {
             if (it.high) highP++
             else lowP++
         }
+        queue.addAll(toAdd.filter { it.mod.type != 'o' })
 
         // toAdd.forEach { println("${qItem.mod.name} - ${it.high} -> ${it.mod.name}") }
     }

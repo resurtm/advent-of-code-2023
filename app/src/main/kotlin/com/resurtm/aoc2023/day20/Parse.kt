@@ -37,7 +37,7 @@ internal fun parseRawLine(rawLine: String): Mod {
 internal data class Mod(
     val type: Char,
     val name: String,
-    val next: List<String>,
+    val next: List<String> = emptyList(),
     var on: Boolean = false,
     val inps: MutableMap<String, Boolean> = mutableMapOf()
 )
