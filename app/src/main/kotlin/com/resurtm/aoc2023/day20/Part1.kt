@@ -3,11 +3,13 @@ package com.resurtm.aoc2023.day20
 import java.util.ArrayDeque
 
 internal fun calcPart1(mods: Map<String, Mod>): Long {
+    val deadMods = mutableListOf<String>()
     mods.forEach { (currName, currMod) ->
         currMod.next.filter { it != "output" }.forEach { nextName ->
             val nextMod = mods[nextName]
-                ?: throw Exception("Cannot find a necessary module")
-            if (nextMod.type == '&' && !nextMod.inps.contains(currName)) {
+            if (nextMod == null) {
+                deadMods.add(nextName)
+            } else if (nextMod.type == '&' && !nextMod.inps.contains(currName)) {
                 nextMod.inps[currName] = false
             }
         }
@@ -15,7 +17,7 @@ internal fun calcPart1(mods: Map<String, Mod>): Long {
 
     var result = PulseInfo()
     repeat(1000) {
-        val pulseInfo = pushButton(mods)
+        val pulseInfo = pushButton(mods, deadMods)
         result = PulseInfo(result.low + pulseInfo.low, result.high + pulseInfo.high)
     }
 
@@ -24,7 +26,7 @@ internal fun calcPart1(mods: Map<String, Mod>): Long {
     return result.low * result.high
 }
 
-internal fun pushButton(mods: Map<String, Mod>): PulseInfo {
+internal fun pushButton(mods: Map<String, Mod>, deadMods: List<String>): PulseInfo {
     val queue = ArrayDeque<QueueItem>()
     queue.add(QueueItem(
         mods.values.find { it.type == 'b' }
@@ -37,8 +39,10 @@ internal fun pushButton(mods: Map<String, Mod>): PulseInfo {
     while (queue.isNotEmpty()) {
         val qItem = queue.pollFirst()
             ?: throw Exception("Queue should not be empty here")
-        val nextMods = mods.values.filter { it.name in qItem.mod.next } +
-                if (qItem.mod.next.contains("output")) listOf(Mod('o', "output")) else emptyList()
+
+        val add1 = if (qItem.mod.next.contains("output")) listOf(Mod('o', "output")) else emptyList()
+        val add2 = deadMods.filter { it in qItem.mod.next }.map { Mod('d', "dead") }
+        val nextMods = mods.values.filter { it.name in qItem.mod.next } + add1 + add2
 
         val toAdd = mutableListOf<QueueItem>()
         if (qItem.mod.type == 'b') {
@@ -60,7 +64,7 @@ internal fun pushButton(mods: Map<String, Mod>): PulseInfo {
             if (it.high) highP++
             else lowP++
         }
-        queue.addAll(toAdd.filter { it.mod.type != 'o' })
+        queue.addAll(toAdd.filter { it.mod.type !in arrayOf('o', 'd') })
 
         // toAdd.forEach { println("${qItem.mod.name} - ${it.high} -> ${it.mod.name}") }
     }
