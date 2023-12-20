@@ -15,11 +15,26 @@ fun launchDay20(testCase: String) {
         }
     }
 
+    var result = PulseInfo()
+    repeat(1000) {
+        val pulseInfo = pushButton(mods)
+        result = PulseInfo(result.low + pulseInfo.low, result.high + pulseInfo.high)
+    }
+    println(result)
+    println("${result.low * result.high}")
+
+    // mods.values.forEach { println(it) }
+}
+
+internal fun pushButton(mods: Map<String, Mod>): PulseInfo {
     val queue = ArrayDeque<QueueItem>()
     queue.add(QueueItem(
         mods.values.find { it.type == 'b' }
             ?: throw Exception("Cannot find a broadcaster")
     ))
+
+    var lowP = 1L
+    var highP = 0L
 
     while (queue.isNotEmpty()) {
         val qItem = queue.pollFirst()
@@ -38,15 +53,18 @@ fun launchDay20(testCase: String) {
             qItem.mod.inps[qItem.prevName] = qItem.high
             val signal = !qItem.mod.inps.values.all { it }
             toAdd.addAll(nextMods.map { QueueItem(it, signal, qItem.mod.name) })
-        } else throw Exception("Invalid queue item detected, cannot work on it")
-        queue.addAll(toAdd)
-
-        toAdd.forEach {
-            println("${qItem.mod.name} - ${it.high} -> ${it.mod.name}")
+        } else {
+            throw Exception("Invalid queue item detected, cannot work on it")
         }
+
+        queue.addAll(toAdd)
+        toAdd.forEach {
+            if (it.high) highP++
+            else lowP++
+        }
+
+        // toAdd.forEach { println("${qItem.mod.name} - ${it.high} -> ${it.mod.name}") }
     }
 
-    mods.values.forEach {
-        println(it)
-    }
+    return PulseInfo(lowP, highP)
 }

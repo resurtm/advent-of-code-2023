@@ -47,3 +47,8 @@ internal data class QueueItem(
     val high: Boolean = false,
     val prevName: String = "",
 )
+
+internal data class PulseInfo(
+    val low: Long = 0,
+    val high: Long = 0,
+)
