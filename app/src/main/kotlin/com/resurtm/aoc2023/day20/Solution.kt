@@ -1,37 +1,52 @@
 package com.resurtm.aoc2023.day20
 
+import java.util.ArrayDeque
+
 fun launchDay20(testCase: String) {
-    val input = readInput(testCase)
-    println(input)
-}
+    val mods = readInput(testCase)
 
-internal fun readInput(testCase: String): List<Mod> {
-    val reader =
-        object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
-            ?: throw Exception("Cannot read an input, probably it is invalid")
-
-    val mods = mutableListOf<Mod>()
-    while (true) {
-        val rawLine = (reader.readLine() ?: break).trim()
-        if (rawLine.isEmpty()) continue
-        mods.add(parseRawLine(rawLine))
+    mods.forEach { (currName, currMod) ->
+        currMod.next.forEach { nextName ->
+            val nextMod = mods[nextName]
+                ?: throw Exception("Cannot find a necessary module")
+            if (nextMod.type == '&' && !nextMod.inps.contains(currName)) {
+                nextMod.inps[currName] = false
+            }
+        }
     }
-    return mods
+
+    val queue = ArrayDeque<QueueItem>()
+    queue.add(QueueItem(
+        mods.values.find { it.type == 'b' }
+            ?: throw Exception("Cannot find a broadcaster")
+    ))
+
+    while (queue.isNotEmpty()) {
+        val qItem = queue.pollFirst()
+            ?: throw Exception("Queue should not be empty here")
+        val nextMods = mods.values.filter { it.name in qItem.mod.next }
+
+        val toAdd = mutableListOf<QueueItem>()
+        if (qItem.mod.type == 'b') {
+            toAdd.addAll(nextMods.map { QueueItem(it, qItem.high, qItem.mod.name) })
+        } else if (qItem.mod.type == '%') {
+            if (!qItem.high) {
+                qItem.mod.on = !qItem.mod.on
+                toAdd.addAll(nextMods.map { QueueItem(it, qItem.mod.on, qItem.mod.name) })
+            }
+        } else if (qItem.mod.type == '&') {
+            qItem.mod.inps[qItem.prevName] = qItem.high
+            val signal = !qItem.mod.inps.values.all { it }
+            toAdd.addAll(nextMods.map { QueueItem(it, signal, qItem.mod.name) })
+        } else throw Exception("Invalid queue item detected, cannot work on it")
+        queue.addAll(toAdd)
+
+        toAdd.forEach {
+            println("${qItem.mod.name} - ${it.high} -> ${it.mod.name}")
+        }
+    }
+
+    mods.values.forEach {
+        println(it)
+    }
 }
-
-internal fun parseRawLine(rawLine: String): Mod {
-    val parts = rawLine.split("->").map { it.trim() }
-
-    val type =
-        if (parts[0] == "broadcaster") 'b'
-        else if (parts[0][0] in arrayOf('%', '&')) parts[0][0]
-        else throw Exception("Invalid part detected, cannot read it")
-
-    val name = parts[0].trimStart('%', '&')
-
-    val next = parts[1].split(',').map { it.trim() }
-
-    return Mod(type, name, next)
-}
-
-internal data class Mod(val type: Char, val name: String, val next: List<String>)
