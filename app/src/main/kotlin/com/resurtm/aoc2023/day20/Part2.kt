@@ -1,6 +1,6 @@
 package com.resurtm.aoc2023.day20
 
-internal fun calcPart1(mods: Map<String, Mod>): Long {
+internal fun calcPart2(mods: Map<String, Mod>): Long {
     var res = PulseInfo()
     repeat(1000) {
         val re = pushButton(mods, findDeadMods(mods))
