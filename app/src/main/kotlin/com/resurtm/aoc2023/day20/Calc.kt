@@ -17,7 +17,11 @@ internal fun findDeadMods(mods: Map<String, Mod>): List<String> {
     return deadMods
 }
 
-internal fun pushButton(mods: Map<String, Mod>, deadMods: List<String>): PulseInfo {
+internal fun pushButton(
+    mods: Map<String, Mod>,
+    deadMods: List<String>,
+    lookForDead: Boolean = false
+): PulseInfo {
     val queue = ArrayDeque<QueueItem>()
     queue.add(QueueItem(
         mods.values.find { it.type == 'b' }
@@ -51,11 +55,16 @@ internal fun pushButton(mods: Map<String, Mod>, deadMods: List<String>): PulseIn
             throw Exception("Invalid queue item detected, cannot work on it")
         }
 
+        queue.addAll(toAdd.filter { it.mod.type !in arrayOf('o', 'd') })
         toAdd.forEach {
             if (it.high) highP++
             else lowP++
         }
-        queue.addAll(toAdd.filter { it.mod.type !in arrayOf('o', 'd') })
+
+        if (lookForDead) {
+            val deadMod = toAdd.find { it.mod.type == 'd' }
+            if (deadMod != null && !deadMod.high) return PulseInfo(foundDead = true)
+        }
     }
 
     return PulseInfo(lowP, highP)
