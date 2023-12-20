@@ -9,7 +9,7 @@ internal fun findDeadMods(mods: Map<String, Mod>): List<String> {
             val nextMod = mods[nextName]
             if (nextMod == null) {
                 deadMods.add(nextName)
-            } else if (nextMod.type == '&' && !nextMod.inps.contains(currName)) {
+            } else if (!nextMod.inps.contains(currName)) {
                 nextMod.inps[currName] = false
             }
         }
@@ -20,7 +20,7 @@ internal fun findDeadMods(mods: Map<String, Mod>): List<String> {
 internal fun pushButton(
     mods: Map<String, Mod>,
     deadMods: List<String>,
-    lookForDead: Boolean = false
+    lookFor: String? = null,
 ): PulseInfo {
     val queue = ArrayDeque<QueueItem>()
     queue.add(QueueItem(
@@ -30,10 +30,15 @@ internal fun pushButton(
 
     var lowP = 1L
     var highP = 0L
+    var found = false
 
     while (queue.isNotEmpty()) {
         val qItem = queue.pollFirst()
             ?: throw Exception("Queue should not be empty here")
+
+//        if (lookFor != null && qItem.mod.name == lookFor && qItem.high) {
+//            found = true
+//        }
 
         val add1 = if (qItem.mod.next.contains("output")) listOf(Mod('o', "output")) else emptyList()
         val add2 = deadMods.filter { it in qItem.mod.next }.map { Mod('d', "dead") }
@@ -50,7 +55,13 @@ internal fun pushButton(
         } else if (qItem.mod.type == '&') {
             qItem.mod.inps[qItem.prevName] = qItem.high
             val signal = !qItem.mod.inps.values.all { it }
+            qItem.mod.on = signal
             toAdd.addAll(nextMods.map { QueueItem(it, signal, qItem.mod.name) })
+            if (lookFor != null && qItem.mod.name == lookFor && qItem.mod.on) {
+                // println(lookFor)
+                // println(qItem.mod.inps.values.all { it })
+                found = true
+            }
         } else {
             throw Exception("Invalid queue item detected, cannot work on it")
         }
@@ -60,12 +71,7 @@ internal fun pushButton(
             if (it.high) highP++
             else lowP++
         }
-
-        if (lookForDead) {
-            val deadMod = toAdd.find { it.mod.type == 'd' }
-            if (deadMod != null && !deadMod.high) return PulseInfo(foundDead = true)
-        }
     }
 
-    return PulseInfo(lowP, highP)
+    return PulseInfo(lowP, highP, found)
 }

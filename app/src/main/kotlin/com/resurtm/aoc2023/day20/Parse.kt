@@ -51,5 +51,5 @@ internal data class QueueItem(
 internal data class PulseInfo(
     val low: Long = 0,
     val high: Long = 0,
-    val foundDead: Boolean = false,
+    val found: Boolean = false,
 )
