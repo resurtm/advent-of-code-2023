@@ -6,7 +6,7 @@ fun launchDay20(testCase: String) {
     val mods = readInput(testCase)
 
     mods.forEach { (currName, currMod) ->
-        currMod.next.forEach { nextName ->
+        currMod.next.filter { it != "output" }.forEach { nextName ->
             val nextMod = mods[nextName]
                 ?: throw Exception("Cannot find a necessary module")
             if (nextMod.type == '&' && !nextMod.inps.contains(currName)) {
