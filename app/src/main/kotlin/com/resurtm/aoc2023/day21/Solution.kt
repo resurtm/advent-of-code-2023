@@ -1,28 +1,29 @@
 package com.resurtm.aoc2023.day21
 
 fun launchDay21(testCase: String) {
-    solvePart1(readInput(testCase))
+    val part1 = solvePart1(readInput(testCase), 64L).size
+    println("Day 21, part 1: $part1")
 }
 
-private fun solvePart1(grid: Grid) {
+internal fun solvePart1(grid: Grid, maxSteps: Long): Set<Pos> {
     var coords = mutableSetOf(grid.findStart())
-
     var steps = 0L
-    while (steps < 6L) {
+
+    while (steps < maxSteps) {
         val nextCoords = mutableSetOf<Pos>()
         coords.forEach {
             nextCoords.addAll(grid.findNextCoords(it))
         }
-        coords = nextCoords
 
+        coords = nextCoords
         steps++
     }
 
-    grid.print(coords)
+    return coords
 }
 
-private data class Grid(val grid: List<List<Char>>) {
-    fun findStart(): Pos {
+internal data class Grid(val grid: List<List<Char>>) {
+    internal fun findStart(): Pos {
         grid.indices.forEach { row ->
             val col = grid[row].indexOf('S')
             if (col != -1)
@@ -59,9 +60,9 @@ private data class Grid(val grid: List<List<Char>>) {
     }
 }
 
-private data class Pos(val row: Long = 0L, val col: Long = 0L)
+internal data class Pos(val row: Long = 0L, val col: Long = 0L)
 
-private fun readInput(testCase: String): Grid {
+internal fun readInput(testCase: String): Grid {
     val reader =
         object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
             ?: throw Exception("Cannot read an input, probably it is invalid")
