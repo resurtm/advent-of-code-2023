@@ -22,12 +22,27 @@ class Day21Test {
             Pos(row = 7, col = 1),
             Pos(row = 6, col = 6),
             Pos(row = 3, col = 1),
-            Pos(row = 4, col = 0)
+            Pos(row = 4, col = 0),
         )
-
-        val input = readInput("/day21/test-case.txt")
-        val actual = solvePart1(input, 6L)
-
+        val actual = traverse(getInput(), 6L)
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun canSolvePart2() {
+        mapOf(
+            6L to 16L,
+            10L to 50L,
+            50L to 1594L,
+            100L to 6536L,
+            // 500L to 167004L,
+            // 1000L to 668697L,
+            // 5000L to 16733044L,
+        ).forEach { (maxSteps, expected) ->
+            val actual = traverse(getInput(), maxSteps, useInf = true).size.toLong()
+            assertEquals(expected, actual)
+        }
+    }
+
+    private fun getInput() = readInput("/day21/test-case.txt")
 }
