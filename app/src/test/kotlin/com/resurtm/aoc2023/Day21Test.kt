@@ -24,7 +24,7 @@ class Day21Test {
             Pos(row = 3, col = 1),
             Pos(row = 4, col = 0),
         )
-        val actual = traverse(getInput(), 6L)
+        val actual = getInput().traverse(6L)
         assertEquals(expected, actual)
     }
 
@@ -39,7 +39,7 @@ class Day21Test {
             // 1000L to 668697L,
             // 5000L to 16733044L,
         ).forEach { (maxSteps, expected) ->
-            val actual = traverse(getInput(), maxSteps, useInf = true).size.toLong()
+            val actual = getInput().traverse(maxSteps, useInf = true).size.toLong()
             assertEquals(expected, actual)
         }
     }

@@ -1,7 +1,27 @@
 package com.resurtm.aoc2023.day21
 
 internal data class Grid(val grid: List<List<Char>>) {
-    internal fun findStart(): Pos {
+    internal fun traverse(maxSteps: Long, useInf: Boolean = false): Set<Pos> {
+        var coords = mutableSetOf(findStart())
+        var steps = 0L
+
+        while (steps < maxSteps) {
+            val nextCoords = mutableSetOf<Pos>()
+            coords.forEach {
+                nextCoords.addAll(
+                    if (useInf) findNextCoordsInf(it)
+                    else findNextCoords(it)
+                )
+            }
+
+            coords = nextCoords
+            steps++
+        }
+
+        return coords
+    }
+
+    private fun findStart(): Pos {
         grid.indices.forEach { row ->
             val col = grid[row].indexOf('S')
             if (col != -1)
@@ -10,7 +30,7 @@ internal data class Grid(val grid: List<List<Char>>) {
         throw Exception("Cannot find a start, probably an invalid grid")
     }
 
-    fun findNextCoordsInf(pos: Pos): List<Pos> = findCrossCombs(pos)
+    private fun findNextCoordsInf(pos: Pos): List<Pos> = findCrossCombs(pos)
         .mapNotNull {
             if (getInf(it) == '#')
                 null
@@ -18,7 +38,7 @@ internal data class Grid(val grid: List<List<Char>>) {
                 it
         }
 
-    fun findNextCoords(pos: Pos): List<Pos> = findCrossCombs(pos)
+    private fun findNextCoords(pos: Pos): List<Pos> = findCrossCombs(pos)
         .mapNotNull {
             if (it.row < 0 || it.row >= grid.size || it.col < 0 || it.col >= grid[0].size)
                 null
@@ -45,7 +65,7 @@ internal data class Grid(val grid: List<List<Char>>) {
         pos.copy(col = pos.col + 1),
     )
 
-    fun print(coords: Collection<Pos>? = null, addSeparator: Boolean = true) {
+    internal fun print(coords: Collection<Pos>? = null, addSeparator: Boolean = true) {
         if (addSeparator)
             println("--------------------")
         grid.forEachIndexed { row, items ->
