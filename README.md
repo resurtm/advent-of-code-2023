@@ -27,7 +27,7 @@ Memory: 11889MiB / 31316MiB
 ### Day 21
 
 Used [this approach from Reddit](https://www.reddit.com/r/adventofcode/comments/18nevo3/comment/keaiiq7/).
-The code implementation is mine, but the idea was taken from that thread on Reddit.
+The code implementation is mine, but the idea has been taken from that thread on Reddit.
 
 ## License
 
