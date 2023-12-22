@@ -7,9 +7,9 @@ import kotlin.test.assertTrue
 
 class Day22Test {
     @Test
-    fun canSolvePart1() {
-        val expected = 5L
-        val actual = solvePart1("/day22/test-case.txt")
+    fun canSolveIt() {
+        val expected = Pair(5L, 7L)
+        val actual = solve("/day22/test-case.txt")
         assertEquals(expected, actual)
     }
 
