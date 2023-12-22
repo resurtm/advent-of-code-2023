@@ -4,21 +4,47 @@ import kotlin.math.max
 import kotlin.math.min
 
 fun launchDay22(testCase: String) {
-    val space = Space()
-    space.readBricks(testCase)
-    space.applyGravity()
+    println("Day 22, part 1: ${solvePart1(testCase)}")
+}
+
+internal fun solvePart1(testCase: String): Long {
+    val origin = Space()
+    origin.readBricks(testCase)
+    origin.applyGravity()
+
+    var result = 0L
+    for (b in origin.bricks.indices) {
+        val cloned0 = origin.deepCopy()
+        val cloned1 = origin.deepCopy()
+
+        cloned0.bricks.removeAt(b)
+        cloned1.bricks.removeAt(b)
+        cloned1.applyGravity()
+
+        if (cloned0 == cloned1)
+            result++
+    }
+    return result
 }
 
 internal data class Pos(val x: Long, val y: Long, val z: Long)
 
 internal data class Brick(val a: Pos, val b: Pos) {
-    internal fun intersects(some: Brick): Boolean {
-        return (this.a.x <= some.b.x && this.b.x >= some.a.x) &&
-                (this.a.y <= some.b.y && this.b.y >= some.a.y)
-    }
+    internal fun intersectsZ(some: Brick) =
+        (this.a.x <= some.b.x && this.b.x >= some.a.x) && (this.a.y <= some.b.y && this.b.y >= some.a.y)
 }
 
 internal data class Space(var bricks: MutableList<Brick> = mutableListOf()) {
+    internal fun deepCopy(): Space {
+        val bricks = this.bricks.map {
+            Brick(
+                a = Pos(it.a.x, it.a.y, it.a.z),
+                b = Pos(it.b.x, it.b.y, it.b.z),
+            )
+        }
+        return Space(bricks.toMutableList())
+    }
+
     internal fun applyGravity() {
         for (b0 in bricks.indices) {
             val br0 = bricks[b0]
@@ -26,7 +52,7 @@ internal data class Space(var bricks: MutableList<Brick> = mutableListOf()) {
 
             for (b1 in 0..<b0) {
                 val br1 = bricks[b1]
-                if (br0.intersects(br1) && maxZ < br1.b.z + 1L)
+                if (br0.intersectsZ(br1) && maxZ < br1.b.z + 1L)
                     maxZ = br1.b.z + 1L
             }
 
@@ -61,7 +87,6 @@ internal data class Space(var bricks: MutableList<Brick> = mutableListOf()) {
 
         val a = Pos(x = min(p1[0], p2[0]), y = min(p1[1], p2[1]), z = min(p1[2], p2[2]))
         val b = Pos(x = max(p1[0], p2[0]), y = max(p1[1], p2[1]), z = max(p1[2], p2[2]))
-        val minZ = if (a.z <= b.z) a.z else b.z
 
         return Brick(a, b)
     }
