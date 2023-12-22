@@ -1,11 +1,17 @@
 package com.resurtm.aoc2023.day05
 
+/**
+ * See the README.md file for more details on this one.
+ */
 fun launchDay05(testCase: String) {
     val env = readEnv(testCase)
     println("Day 05, part 01: ${solvePart1(env)}")
     println("Day 05, part 02: ${solvePart2(env)}")
 }
 
+/**
+ * See the README.md file for more details on this one.
+ */
 private fun solvePart2(env: Env): Long? {
     var min: Long? = null
     for (rawPair in env.seedsV2) {

@@ -1,21 +1,34 @@
-MIT License
+# Advent of Code 2023 – Solutions
 
-Copyright (c) 2023 resurtm
+## Notes
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+### Day 05
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The step 2 is a bruteforce stupid solution.
+Had to wait for around ~5–7 minutes to have the answer.
+Launched it on:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+```
+openjdk version "21" 2023-09-19 LTS
+OpenJDK Runtime Environment Temurin-21+35 (build 21+35-LTS)
+OpenJDK 64-Bit Server VM Temurin-21+35 (build 21+35-LTS, mixed mode, sharing)
+```
+
+```
+OS: EndeavourOS Linux x86_64
+Host: 20UES00H00 ThinkPad T14 Gen 1
+Kernel: 6.6.7-arch1-1
+DE: GNOME 45.2
+CPU: AMD Ryzen 5 PRO 4650U with Radeon Graphics (12) @ 2.100GHz
+GPU: AMD ATI Radeon RX Vega 6
+Memory: 11889MiB / 31316MiB
+```
+
+### Day 21
+
+Used [this approach from Reddit](https://www.reddit.com/r/adventofcode/comments/18nevo3/comment/keaiiq7/).
+The code implementation is mine, but the idea was taken from that thread on Reddit.
+
+## License
+
+[MIT License](LICENSE.md)
