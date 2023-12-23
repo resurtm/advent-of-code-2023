@@ -1,9 +1,10 @@
 package com.resurtm.aoc2023.day23
 
+import kotlin.math.abs
+
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
     println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2()}")
-    // println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2Graph()}")
 }
 
 internal data class Grid(
@@ -11,47 +12,18 @@ internal data class Grid(
     val start: Pos,
     val end: Pos
 ) {
-    fun solvePart2Graph(): Int {
-        val queue = ArrayDeque<Pos>()
-        queue.add(start)
-        grid[start.row][start.col].dist = 0
-
-        while (queue.isNotEmpty()) {
-            val currPos = queue.removeFirstOrNull() ?: break
-            val currNode = grid[currPos.row][currPos.col]
-            currNode.visited = true
-
-            val nexts = findNextPositionsV2(currPos)
-            if (currNode.dist != Int.MIN_VALUE) {
-                nexts.forEach {
-                    val otherNode = grid[it.row][it.col]
-                    if (otherNode.dist < currNode.dist + 1)
-                        otherNode.dist = currNode.dist + 1
-                }
-            }
-            queue.addAll(nexts)
-        }
-
-        var maxDist = Int.MIN_VALUE
-        grid.forEach { row ->
-            row.forEach {
-                if (maxDist < it.dist)
-                    maxDist = it.dist
-            }
-        }
-        return maxDist
-    }
-
     fun solvePart2(): Int {
-        val maxPath = findMax(ignoreDirs = true)
+        val maxPath = findLongestPath(ignoreDirs = true)
         // this.printGrid(maxPath)
-        return maxPath.size - 1
+        return maxPath.points.size - 1
     }
 
-    fun solvePart1(): Int = findMax().size - 1
+    fun solvePart1(): Int = findLongestPath().points.size - 1
 
-    private fun findMax(ignoreDirs: Boolean = false): List<Pos> {
-        val paths = mutableListOf(mutableListOf(start.copy()))
+    private fun findLongestPath(ignoreDirs: Boolean = false): Path {
+        val paths = mutableListOf(
+            Path(mutableListOf(start.copy()))
+        )
         var maxSize = 0
         var maxPath = paths.first()
 
@@ -60,11 +32,11 @@ internal data class Grid(
             while (pathIdx < paths.size) {
                 val path = paths[pathIdx]
 
-                // val nexts = findNextPositionsV1(path[path.size - 1], path, ignoreDirs)
-                val nexts = findNextPositionsV3(path[path.size - 1], path)
+//                val nexts = findNextPositionsV1(path.points.last(), path.points, ignoreDirs)
+                val nexts = findNextPositionsV3(path.points.last(), path.points)
 
                 if (nexts.isEmpty()) {
-                    if (maxSize < path.size && path.last() == end) {
+                    if (maxSize < path.size && path.points.last() == end) {
                         maxSize = path.size
                         maxPath = path
                     }
@@ -74,8 +46,9 @@ internal data class Grid(
                 }
 
                 for (nextIdx in nexts.indices) {
-                    val copied = path.map { it.copy() } + nexts[nextIdx]
-                    paths.add(copied.toMutableList())
+                    val newSize = path.size + path.points.last().dist(nexts[nextIdx])
+                    val newPoints = path.points.map { it.copy() } + nexts[nextIdx]
+                    paths.add(Path(newPoints.toMutableList(), newSize))
                 }
                 if (nexts.isNotEmpty()) {
                     paths.removeAt(pathIdx)
@@ -88,17 +61,6 @@ internal data class Grid(
 
         return maxPath
     }
-
-    private fun findNextPositionsV2(pos: Pos): List<Pos> = directions
-        .asSequence()
-        .map { it.first }
-        .map { it.copy(row = pos.row + it.row, col = pos.col + it.col) }
-        .filter { it.row >= 0L && it.col >= 0L && it.row <= grid.size - 1L && it.col <= grid[0].size - 1L }
-        .filter {
-            val node = grid[it.row][it.col]
-            node.ch in emptyChars && !node.visited
-        }
-        .toList()
 
     internal fun findNextPositionsV3(
         p: Pos,
@@ -216,6 +178,10 @@ internal data class Grid(
     }
 }
 
-internal data class Node(val ch: Char, var dist: Int = Int.MIN_VALUE, var visited: Boolean = false)
+internal data class Node(val ch: Char)
 
-internal data class Pos(val row: Int, val col: Int)
+internal data class Pos(val row: Int, val col: Int) {
+    internal fun dist(some: Pos) = abs(some.row - this.row) + abs(some.col - this.col)
+}
+
+internal data class Path(val points: MutableList<Pos> = mutableListOf(), val size: Int = 0)
