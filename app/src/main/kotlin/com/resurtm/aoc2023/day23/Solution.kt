@@ -1,11 +1,13 @@
 package com.resurtm.aoc2023.day23
 
 import kotlin.math.abs
+import kotlin.math.max
 
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
-    // println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
+    println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
     println("Day 23, part 2 (fast): ${Grid.readInput(testCase).solvePart2Fast()}")
+    println("Day 23, part 2 (graph): ${Grid.readInput(testCase).solvePart2Graph()}")
 }
 
 internal data class Grid(
@@ -13,11 +15,141 @@ internal data class Grid(
     val start: Pos,
     val end: Pos
 ) {
+    private val graph = mutableMapOf<Pos, MutableSet<Pos>>()
+    private val visited = mutableSetOf<Pos>()
+    private val topological = mutableListOf<Pos>()
+    private val dists = mutableMapOf<Pos, Int>()
+
     fun solvePart1(): Int = findLongestPath().first
 
     fun solvePart2Slow(): Int = findLongestPath(ignoreDirs = true).first
 
     fun solvePart2Fast(): Int = findLongestPath(useIntersections = true).first
+
+    fun solvePart2Graph(): Int {
+        buildGraph()
+//         println(graph)
+        graph.forEach { println(it) }
+        buildTopological()
+        // println(topological)
+        val longestPath = calcLongestPath()
+        buildLongestPath()
+
+        return longestPath
+    }
+
+    private fun buildLongestPath() {
+        var curr = start
+        val path = mutableListOf<Pos>()
+
+        while (curr != end) {
+            path.add(curr)
+
+            val nexts = graph[curr] ?: break
+            if (nexts.isEmpty()) {
+                break
+            }
+
+            var maxPos = nexts.first()
+            var maxDst = dists[maxPos] ?: break
+
+            nexts.forEach {
+                val dst = dists[it]
+                if (dst != null && maxDst > dst) {
+                    maxPos = it
+                    maxDst = dst
+                }
+            }
+
+            curr = maxPos
+        }
+        // println(dists)
+        // path.add(end)
+
+        printGrid(path)
+        // println(path)
+    }
+
+    private fun calcLongestPath(): Int {
+        dists.clear()
+        topological.forEach { dists[it] = Int.MIN_VALUE }
+        dists[start] = 0
+
+        topological.forEach { node ->
+            val nexts = graph[node] ?: emptySet()
+            nexts.forEach { next ->
+                dists[next] = max(
+                    dists[next] ?: Int.MIN_VALUE,
+                    (dists[node] ?: Int.MIN_VALUE) + node.dist(next)
+                )
+            }
+        }
+
+        return dists.values.fold(Int.MIN_VALUE) { acc: Int, i: Int -> if (acc < i) i else acc }
+    }
+
+    private fun buildTopological() {
+        visited.clear()
+        topological.clear()
+        graph.entries.forEach { (node, nexts) ->
+            buildTopologicalVisit(node, nexts)
+        }
+        topological.reverse()
+    }
+
+    private fun buildTopologicalVisit(node: Pos, nexts: Set<Pos>) {
+        if (node in visited)
+            return
+        visited.add(node)
+        nexts.forEach { next ->
+            buildTopologicalVisit(next, graph[next] ?: emptySet())
+        }
+        topological.add(node)
+    }
+
+    private fun buildGraph() {
+        graph.clear()
+
+        val queue = ArrayDeque<Pos>()
+        queue.add(start)
+
+        while (queue.isNotEmpty()) {
+            val pos = queue.removeFirst()
+            println(pos)
+
+            val nexts = findNextPositionsV2(pos)
+            nexts.forEach {
+                // check for existing direction
+                val ex = graph[it] ?: mutableSetOf()
+                if (ex.isEmpty() || !ex.contains(pos)) {
+                    // add item to directed graph
+                    val st = graph[pos] ?: mutableSetOf()
+                    st.add(it)
+                    graph[pos] = st
+
+                    queue.add(it)
+                }
+            }
+        }
+
+        // buildGraphRecursive(start)
+    }
+
+    private fun buildGraphRecursive(pos: Pos, history: List<Pos> = emptyList()) {
+        val nexts = findNextPositionsV2(pos, history)
+        nexts.forEach {
+            // check for existing direction
+            val ex = graph[it] ?: mutableSetOf()
+            if (ex.isEmpty() || !ex.contains(pos)) {
+                // add item to directed graph
+                val st = graph[pos] ?: mutableSetOf()
+                st.add(it)
+                graph[pos] = st
+
+                buildGraphRecursive(it, history + pos)
+            }
+        }
+    }
 
     private fun findLongestPath(
         ignoreDirs: Boolean = false,
@@ -41,7 +173,7 @@ internal data class Grid(
                     if (path.points.last() == end && path.size() > maxSize) {
                         maxSize = path.size()
                         maxPath = path
-                        println(maxSize)
+                        // println(maxSize)
                     }
                     paths.removeAt(pathIdx)
                     continue
@@ -60,13 +192,13 @@ internal data class Grid(
             }
         }
 
-        // printGrid(maxPath.points)
+        printGrid(maxPath.points)
         return Pair(maxSize, maxPath)
     }
 
     internal fun findNextPositionsV2(
         p: Pos,
-        exclude: List<Pos> = emptyList(),
+        exclude: Collection<Pos> = emptyList(),
     ): List<Pos> {
         val res = mutableListOf<Pos>()
 
@@ -151,7 +283,7 @@ internal data class Grid(
 
     private fun findNextPositionsV1(
         pos: Pos,
-        exclude: List<Pos> = emptyList(),
+        exclude: Collection<Pos> = emptySet(),
         ignoreDirs: Boolean = false,
     ): List<Pos> = directions
         .asSequence()
