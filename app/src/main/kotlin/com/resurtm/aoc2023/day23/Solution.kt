@@ -69,13 +69,12 @@ private data class Grid(
                 }
 
                 for (nextIdx in nexts.indices) {
-                    if (nextIdx == 0) {
-                        paths[pathIdx].add(nexts[0])
-                    } else {
-                        val copied = paths[pathIdx].map { it.copy() }
-                        copied.removeLast()
-                        paths.add((copied + nexts[nextIdx]).toMutableList())
-                    }
+                    val copied = paths[pathIdx].map { it.copy() } + nexts[nextIdx]
+                    paths.add(copied.toMutableList())
+                }
+                if (nexts.isNotEmpty()) {
+                    paths.removeAt(pathIdx)
+                    pathIdx--
                 }
 
                 pathIdx++
