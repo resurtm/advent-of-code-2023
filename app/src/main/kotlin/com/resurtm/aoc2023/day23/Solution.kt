@@ -4,10 +4,10 @@ import kotlin.math.abs
 import kotlin.math.max
 
 fun launchDay23(testCase: String) {
-    println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
-    println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
-    println("Day 23, part 2 (fast): ${Grid.readInput(testCase).solvePart2Fast()}")
-    println("Day 23, part 2 (graph): ${Grid.readInput(testCase).solvePart2Graph()}")
+//    println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
+//    println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
+//    println("Day 23, part 2 (fast): ${Grid.readInput(testCase).solvePart2Fast()}")
+    println("Day 23, part 2 (graph): ${Grid.readInput(testCase).solvePart2Graph2()}")
 }
 
 internal data class Grid(
@@ -20,11 +20,59 @@ internal data class Grid(
     private val topological = mutableListOf<Pos>()
     private val dists = mutableMapOf<Pos, Int>()
 
+    private val gr1 = mutableSetOf<Pair<Pos, Pos>>()
+    private val gr2 = mutableMapOf<Pos, MutableSet<Pos>>()
+
     fun solvePart1(): Int = findLongestPath().first
 
     fun solvePart2Slow(): Int = findLongestPath(ignoreDirs = true).first
 
     fun solvePart2Fast(): Int = findLongestPath(useIntersections = true).first
+
+    fun solvePart2Graph2(): Int {
+        gr1.clear()
+        val queue = ArrayDeque<Pos>()
+        queue.add(start)
+        while (queue.isNotEmpty()) {
+            val pos = queue.removeFirst()
+            val nexts = findNextPositionsV2(pos)
+            nexts.forEach {
+                if (!gr1.contains(Pair(it, pos)) && !gr1.contains(Pair(pos, it))) {
+                    gr1.add(Pair(it, pos))
+                    gr1.add(Pair(pos, it))
+                    val x = gr2[it]
+                    if (x == null) gr2[it] = mutableSetOf(pos) else x.add(pos)
+                    val y = gr2[pos]
+                    if (y == null) gr2[pos] = mutableSetOf(it) else y.add(it)
+                    queue.add(it)
+                }
+            }
+        }
+
+//        println(gr2)
+        recursiveGo(start, mutableListOf())
+//        for (pair in gr2) {
+//            println(pair)
+//        }
+//        println(gr.size)
+        return 0
+    }
+
+    var cnt = 0
+
+    private fun recursiveGo(pos: Pos, path: List<Pos>) {
+        if (pos == end) {
+            cnt++
+            println("$cnt - ${path.size}")
+            return
+        }
+        val nexts = (gr2[pos] ?: mutableSetOf())
+        nexts.forEach {
+            if (!path.contains(it)) {
+                recursiveGo(it, path + it)
+            }
+        }
+    }
 
     fun solvePart2Graph(): Int {
         buildGraph()
