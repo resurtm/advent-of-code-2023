@@ -2,6 +2,7 @@ package com.resurtm.aoc2023.day23
 
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
+    println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2()}")
 }
 
 private data class Grid(
@@ -9,14 +10,18 @@ private data class Grid(
     val start: Pos,
     val end: Pos
 ) {
-    fun solvePart1(): Int {
+    fun solvePart1(): Int = findMax(ignoreDirs = false)
+
+    fun solvePart2(): Int = findMax(ignoreDirs = true)
+
+    private fun findMax(ignoreDirs: Boolean): Int {
         val paths = mutableListOf(mutableListOf(start.copy()))
         var maxSize = 0
 
         while (paths.size > 0) {
             var pathIdx = 0
             while (pathIdx < paths.size) {
-                val nexts = findNextPositions(paths[pathIdx])
+                val nexts = findNextPositions(paths[pathIdx], ignoreDirs = ignoreDirs)
                 if (nexts.isEmpty()) {
                     if (maxSize < paths[pathIdx].size)
                         maxSize = paths[pathIdx].size
@@ -41,7 +46,11 @@ private data class Grid(
         return maxSize - 1
     }
 
-    fun findNextPositions(visited: List<Pos>, posInp: Pos? = null): List<Pos> {
+    private fun findNextPositions(
+        visited: List<Pos>,
+        posInp: Pos? = null,
+        ignoreDirs: Boolean = false,
+    ): List<Pos> {
         val pos = posInp ?: visited.last()
         val freeChs = arrayOf('.', '^', '>', 'v', '<')
         val directions = arrayOf(
@@ -61,11 +70,14 @@ private data class Grid(
             }
             .filter {
                 val p = it.first
-                p.row >= 0 && p.col >= 0 && p.row <= grid.size - 1 && p.col <= grid[0].size - 1
+                p.row >= 0L && p.col >= 0L && p.row <= grid.size - 1L && p.col <= grid[0].size - 1L
             }
             .filter {
                 val ch = grid[it.first.row.toInt()][it.first.col.toInt()].ch
-                ch != it.second && ch in freeChs
+                if (ignoreDirs)
+                    ch in freeChs
+                else
+                    ch != it.second && ch in freeChs
             }
             .map { it.first }
             .filter { visited.indexOf(it) == -1 }
@@ -98,7 +110,7 @@ private data class Grid(
             }
 
             val lastRow = grid.size - 1
-            val start = Pos(row = 0, col = grid[0].indexOfFirst { it.ch == '.' }.toLong())
+            val start = Pos(row = 0L, col = grid[0].indexOfFirst { it.ch == '.' }.toLong())
             val end = Pos(row = lastRow.toLong(), col = grid[lastRow].indexOfFirst { it.ch == '.' }.toLong())
             return Grid(grid, start, end)
         }
