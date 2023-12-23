@@ -4,7 +4,8 @@ import kotlin.math.abs
 
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
-    println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2()}")
+    println("Day 23, part 2 (fast): ${Grid.readInput(testCase).solvePart2Fast()}")
+    println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
 }
 
 internal data class Grid(
@@ -12,15 +13,16 @@ internal data class Grid(
     val start: Pos,
     val end: Pos
 ) {
-    fun solvePart2(): Int {
-        val maxPath = findLongestPath(ignoreDirs = true)
-        // this.printGrid(maxPath)
-        return maxPath.points.size - 1
-    }
-
     fun solvePart1(): Int = findLongestPath().points.size - 1
 
-    private fun findLongestPath(ignoreDirs: Boolean = false): Path {
+    fun solvePart2Fast(): Int = findLongestPath(useIntersections = true).points.size - 1
+
+    fun solvePart2Slow(): Int = findLongestPath(ignoreDirs = true).points.size - 1
+
+    private fun findLongestPath(
+        ignoreDirs: Boolean = false,
+        useIntersections: Boolean = false,
+    ): Path {
         val paths = mutableListOf(
             Path(mutableListOf(start.copy()))
         )
@@ -32,8 +34,8 @@ internal data class Grid(
             while (pathIdx < paths.size) {
                 val path = paths[pathIdx]
 
-//                val nexts = findNextPositionsV1(path.points.last(), path.points, ignoreDirs)
-                val nexts = findNextPositionsV3(path.points.last(), path.points)
+                val nexts = if (useIntersections) findNextPositionsV2(path.points.last(), path.points)
+                else findNextPositionsV1(path.points.last(), path.points, ignoreDirs)
 
                 if (nexts.isEmpty()) {
                     if (maxSize < path.size && path.points.last() == end) {
@@ -62,7 +64,7 @@ internal data class Grid(
         return maxPath
     }
 
-    internal fun findNextPositionsV3(
+    internal fun findNextPositionsV2(
         p: Pos,
         exclude: List<Pos> = emptyList(),
     ): List<Pos> {

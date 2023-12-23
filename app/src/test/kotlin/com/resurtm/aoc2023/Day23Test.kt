@@ -21,7 +21,7 @@ class Day23Test {
     @Test
     fun testFindNextPositionsV3() {
         val expected = listOf(Pos(17, 13), Pos(19, 15), Pos(19, 11))
-        val actual = grid().findNextPositionsV3(Pos(19, 13))
+        val actual = grid().findNextPositionsV2(Pos(19, 13))
         assertEquals(expected, actual)
     }
 
