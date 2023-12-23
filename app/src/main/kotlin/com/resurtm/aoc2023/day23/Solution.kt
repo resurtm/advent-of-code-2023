@@ -2,11 +2,11 @@ package com.resurtm.aoc2023.day23
 
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
-    println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2Legacy()}")
+    println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2()}")
     // println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2Graph()}")
 }
 
-private data class Grid(
+internal data class Grid(
     val grid: List<List<Node>>,
     val start: Pos,
     val end: Pos
@@ -42,7 +42,7 @@ private data class Grid(
         return maxDist.toInt()
     }
 
-    fun solvePart2Legacy(): Int {
+    fun solvePart2(): Int {
         val maxPath = findMax(ignoreDirs = true)
         // this.printGrid(maxPath)
         return maxPath.size - 1
@@ -58,18 +58,20 @@ private data class Grid(
         while (paths.size > 0) {
             var pathIdx = 0
             while (pathIdx < paths.size) {
-                val nexts = findNextPositions(paths[pathIdx].last(), paths[pathIdx], ignoreDirs)
+                val path = paths[pathIdx]
+
+                val nexts = findNextPositionsV1(path[path.size - 1], path, ignoreDirs)
                 if (nexts.isEmpty()) {
-                    if (maxSize < paths[pathIdx].size && paths[pathIdx].last() == end) {
-                        maxSize = paths[pathIdx].size
-                        maxPath = paths[pathIdx]
+                    if (maxSize < path.size && path.last() == end) {
+                        maxSize = path.size
+                        maxPath = path
                     }
                     paths.removeAt(pathIdx)
                     continue
                 }
 
                 for (nextIdx in nexts.indices) {
-                    val copied = paths[pathIdx].map { it.copy() } + nexts[nextIdx]
+                    val copied = path.map { it.copy() } + nexts[nextIdx]
                     paths.add(copied.toMutableList())
                 }
                 if (nexts.isNotEmpty()) {
@@ -95,7 +97,7 @@ private data class Grid(
         }
         .toList()
 
-    private fun findNextPositions(pos: Pos, visited: List<Pos>, ignoreDirs: Boolean): List<Pos> = directions
+    private fun findNextPositionsV1(pos: Pos, exclude: List<Pos>, ignoreDirs: Boolean): List<Pos> = directions
         .asSequence()
         .map {
             val p = it.first
@@ -112,8 +114,8 @@ private data class Grid(
             val ch = grid[it.first.row.toInt()][it.first.col.toInt()].ch
             if (ignoreDirs) ch in freeChs else ch != it.second && ch in freeChs
         }
+        .filter { it.first !in exclude }
         .map { it.first }
-        .filter { visited.indexOf(it) == -1 }
         .toList()
 
     fun printGrid(maxPath: List<Pos> = listOf()) {
@@ -160,6 +162,6 @@ private data class Grid(
     }
 }
 
-private data class Node(val ch: Char, var dist: Long = Long.MIN_VALUE, var visited: Boolean = false)
+internal data class Node(val ch: Char, var dist: Long = Long.MIN_VALUE, var visited: Boolean = false)
 
-private data class Pos(val row: Long, val col: Long)
+internal data class Pos(val row: Long, val col: Long)

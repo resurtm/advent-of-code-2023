@@ -41,6 +41,8 @@ java {
 application {
     // Define the main class for the application.
     mainClass.set("com.resurtm.aoc2023.AppKt")
+
+    applicationDefaultJvmArgs = listOf("-Xms4096m", "-Xmx16384m")
 }
 
 tasks.named<Test>("test") {
