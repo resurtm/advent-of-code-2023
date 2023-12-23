@@ -2,7 +2,7 @@ package com.resurtm.aoc2023.day23
 
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
-    println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2()}")
+    println("Day 23, part 2: ${Grid.readInput(testCase).solvePart2Graph()}")
 }
 
 private data class Grid(
@@ -10,18 +10,47 @@ private data class Grid(
     val start: Pos,
     val end: Pos
 ) {
-    fun solvePart1(): Int = findMax(ignoreDirs = false)
+    fun solvePart2Graph(): Int {
+        val queue = ArrayDeque<Pos>()
+        queue.add(start)
+        grid[start.row.toInt()][start.col.toInt()].dist = 0L
 
-    fun solvePart2(): Int = findMax(ignoreDirs = true)
+        while (queue.isNotEmpty()) {
+            val currPos = queue.removeFirstOrNull() ?: break
+            val currNode = grid[currPos.row.toInt()][currPos.col.toInt()]
+            currNode.visited = true
 
-    private fun findMax(ignoreDirs: Boolean): Int {
+            val nexts = findNextPositionsV2(currPos)
+            if (currNode.dist != Long.MIN_VALUE) {
+                nexts.forEach {
+                    val otherNode = grid[it.row.toInt()][it.col.toInt()]
+                    if (otherNode.dist < currNode.dist + 1)
+                        otherNode.dist = currNode.dist + 1
+                }
+            }
+            queue.addAll(nexts)
+        }
+
+        var maxDist = Long.MIN_VALUE
+        grid.forEach { row ->
+            row.forEach {
+                if (maxDist < it.dist)
+                    maxDist = it.dist
+            }
+        }
+        return maxDist.toInt()
+    }
+
+    fun solvePart1(): Int = findMax()
+
+    private fun findMax(): Int {
         val paths = mutableListOf(mutableListOf(start.copy()))
         var maxSize = 0
 
         while (paths.size > 0) {
             var pathIdx = 0
             while (pathIdx < paths.size) {
-                val nexts = findNextPositions(paths[pathIdx], ignoreDirs = ignoreDirs)
+                val nexts = findNextPositions(paths[pathIdx].last(), paths[pathIdx])
                 if (nexts.isEmpty()) {
                     if (maxSize < paths[pathIdx].size)
                         maxSize = paths[pathIdx].size
@@ -46,43 +75,37 @@ private data class Grid(
         return maxSize - 1
     }
 
-    private fun findNextPositions(
-        visited: List<Pos>,
-        posInp: Pos? = null,
-        ignoreDirs: Boolean = false,
-    ): List<Pos> {
-        val pos = posInp ?: visited.last()
-        val freeChs = arrayOf('.', '^', '>', 'v', '<')
-        val directions = arrayOf(
-            Pair(Pos(-1L, 0L), 'v'),
-            Pair(Pos(1L, 0L), '^'),
-            Pair(Pos(0L, -1L), '>'),
-            Pair(Pos(0L, 1L), '<'),
-        )
-        return directions
-            .asSequence()
-            .map {
-                val p = it.first
-                Pair(
-                    it.first.copy(row = pos.row + p.row, col = pos.col + p.col),
-                    it.second
-                )
-            }
-            .filter {
-                val p = it.first
-                p.row >= 0L && p.col >= 0L && p.row <= grid.size - 1L && p.col <= grid[0].size - 1L
-            }
-            .filter {
-                val ch = grid[it.first.row.toInt()][it.first.col.toInt()].ch
-                if (ignoreDirs)
-                    ch in freeChs
-                else
-                    ch != it.second && ch in freeChs
-            }
-            .map { it.first }
-            .filter { visited.indexOf(it) == -1 }
-            .toList()
-    }
+    private fun findNextPositionsV2(pos: Pos): List<Pos> = directions
+        .asSequence()
+        .map { it.first }
+        .map { it.copy(row = pos.row + it.row, col = pos.col + it.col) }
+        .filter { it.row >= 0L && it.col >= 0L && it.row <= grid.size - 1L && it.col <= grid[0].size - 1L }
+        .filter {
+            val node = grid[it.row.toInt()][it.col.toInt()]
+            node.ch in freeChs && !node.visited
+        }
+        .toList()
+
+    private fun findNextPositions(pos: Pos, visited: List<Pos>): List<Pos> = directions
+        .asSequence()
+        .map {
+            val p = it.first
+            Pair(
+                it.first.copy(row = pos.row + p.row, col = pos.col + p.col),
+                it.second
+            )
+        }
+        .filter {
+            val p = it.first
+            p.row >= 0L && p.col >= 0L && p.row <= grid.size - 1L && p.col <= grid[0].size - 1L
+        }
+        .filter {
+            val ch = grid[it.first.row.toInt()][it.first.col.toInt()].ch
+            ch != it.second && ch in freeChs
+        }
+        .map { it.first }
+        .filter { visited.indexOf(it) == -1 }
+        .toList()
 
     fun print() {
         println("----------")
@@ -94,6 +117,15 @@ private data class Grid(
     }
 
     companion object {
+        private val freeChs = arrayOf('.', '^', '>', 'v', '<')
+
+        private val directions = arrayOf(
+            Pair(Pos(-1L, 0L), 'v'),
+            Pair(Pos(1L, 0L), '^'),
+            Pair(Pos(0L, -1L), '>'),
+            Pair(Pos(0L, 1L), '<'),
+        )
+
         internal fun readInput(testCase: String): Grid {
             val reader =
                 object {}.javaClass.getResourceAsStream(testCase)?.bufferedReader()
@@ -117,6 +149,6 @@ private data class Grid(
     }
 }
 
-private data class Node(val ch: Char)
+private data class Node(val ch: Char, var dist: Long = Long.MIN_VALUE, var visited: Boolean = false)
 
 private data class Pos(val row: Long, val col: Long)
