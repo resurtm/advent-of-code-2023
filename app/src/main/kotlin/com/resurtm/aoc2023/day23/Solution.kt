@@ -41,6 +41,7 @@ internal data class Grid(
                     if (path.points.last() == end && path.size() > maxSize) {
                         maxSize = path.size()
                         maxPath = path
+                        println(maxSize)
                     }
                     paths.removeAt(pathIdx)
                     continue
