@@ -14,14 +14,28 @@ class Day23Test {
     @Test
     fun canSolvePart2() {
         val expected = 154
-        val actual = grid().solvePart2()
+        val actual = grid().solvePart2Slow()
         assertEquals(expected, actual)
     }
 
     @Test
-    fun testFindNextPositionsV3() {
-        val expected = listOf(Pos(17, 13), Pos(19, 15), Pos(19, 11))
-        val actual = grid().findNextPositionsV2(Pos(19, 13))
+    fun canSolvePart3() {
+        val expected = 154
+        val actual = grid().solvePart2Fast()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testFindNextPositionsV3Case1() {
+        val expected = setOf(Pos(17, 13), Pos(19, 15), Pos(19, 11))
+        val actual = grid().findNextPositionsV2(Pos(19, 13)).toSet()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testFindNextPositionsV3Case2() {
+        val expected = setOf(Pos(21, 11), Pos(19, 13))
+        val actual = grid().findNextPositionsV2(Pos(19, 11)).toSet()
         assertEquals(expected, actual)
     }
 

@@ -4,8 +4,8 @@ import kotlin.math.abs
 
 fun launchDay23(testCase: String) {
     println("Day 23, part 1: ${Grid.readInput(testCase).solvePart1()}")
+    // println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
     println("Day 23, part 2 (fast): ${Grid.readInput(testCase).solvePart2Fast()}")
-    println("Day 23, part 2 (slow): ${Grid.readInput(testCase).solvePart2Slow()}")
 }
 
 internal data class Grid(
@@ -13,18 +13,18 @@ internal data class Grid(
     val start: Pos,
     val end: Pos
 ) {
-    fun solvePart1(): Int = findLongestPath().points.size - 1
+    fun solvePart1(): Int = findLongestPath().first
 
-    fun solvePart2Fast(): Int = findLongestPath(useIntersections = true).points.size - 1
+    fun solvePart2Slow(): Int = findLongestPath(ignoreDirs = true).first
 
-    fun solvePart2Slow(): Int = findLongestPath(ignoreDirs = true).points.size - 1
+    fun solvePart2Fast(): Int = findLongestPath(useIntersections = true).first
 
     private fun findLongestPath(
         ignoreDirs: Boolean = false,
         useIntersections: Boolean = false,
-    ): Path {
+    ): Pair<Int, Path> {
         val paths = mutableListOf(
-            Path(mutableListOf(start.copy()))
+            Path(mutableListOf(start.copy())),
         )
         var maxSize = 0
         var maxPath = paths.first()
@@ -38,19 +38,17 @@ internal data class Grid(
                 else findNextPositionsV1(path.points.last(), path.points, ignoreDirs)
 
                 if (nexts.isEmpty()) {
-                    if (maxSize < path.size && path.points.last() == end) {
-                        maxSize = path.size
+                    if (path.points.last() == end && path.size() > maxSize) {
+                        maxSize = path.size()
                         maxPath = path
                     }
-                    // println(path)
                     paths.removeAt(pathIdx)
                     continue
                 }
 
                 for (nextIdx in nexts.indices) {
-                    val newSize = path.size + path.points.last().dist(nexts[nextIdx])
                     val newPoints = path.points.map { it.copy() } + nexts[nextIdx]
-                    paths.add(Path(newPoints.toMutableList(), newSize))
+                    paths.add(Path(newPoints.toMutableList()))
                 }
                 if (nexts.isNotEmpty()) {
                     paths.removeAt(pathIdx)
@@ -61,7 +59,8 @@ internal data class Grid(
             }
         }
 
-        return maxPath
+        // printGrid(maxPath.points)
+        return Pair(maxSize, maxPath)
     }
 
     internal fun findNextPositionsV2(
@@ -69,7 +68,16 @@ internal data class Grid(
         exclude: List<Pos> = emptyList(),
     ): List<Pos> {
         val res = mutableListOf<Pos>()
+
+        // down dir
         for (row in p.row + 1..<grid.size) {
+            if (
+                grid[row][p.col].ch in emptyChars &&
+                (grid[row][p.col - 1].ch in emptyChars || grid[row][p.col + 1].ch in emptyChars)
+            ) {
+                res.add(Pos(row, p.col))
+                break
+            }
             if (grid[row][p.col].ch !in emptyChars) {
                 if (Pos(row - 1, p.col) != p)
                     res.add(Pos(row - 1, p.col))
@@ -79,7 +87,16 @@ internal data class Grid(
                 res.add(Pos(row, p.col))
             }
         }
+
+        // up dir
         for (row in p.row - 1 downTo 0) {
+            if (
+                grid[row][p.col].ch in emptyChars &&
+                (grid[row][p.col - 1].ch in emptyChars || grid[row][p.col + 1].ch in emptyChars)
+            ) {
+                res.add(Pos(row, p.col))
+                break
+            }
             if (grid[row][p.col].ch !in emptyChars) {
                 if (Pos(row + 1, p.col) != p)
                     res.add(Pos(row + 1, p.col))
@@ -89,7 +106,16 @@ internal data class Grid(
                 res.add(Pos(row, p.col))
             }
         }
+
+        // right dir
         for (col in p.col + 1..<grid[0].size) {
+            if (
+                grid[p.row][col].ch in emptyChars &&
+                (grid[p.row - 1][col].ch in emptyChars || grid[p.row + 1][col].ch in emptyChars)
+            ) {
+                res.add(Pos(p.row, col))
+                break
+            }
             if (grid[p.row][col].ch !in emptyChars) {
                 if (Pos(p.row, col - 1) != p)
                     res.add(Pos(p.row, col - 1))
@@ -99,7 +125,16 @@ internal data class Grid(
                 res.add(Pos(p.row, col))
             }
         }
+
+        // left dir
         for (col in p.col - 1 downTo 0) {
+            if (
+                grid[p.row][col].ch in emptyChars &&
+                (grid[p.row - 1][col].ch in emptyChars || grid[p.row + 1][col].ch in emptyChars)
+            ) {
+                res.add(Pos(p.row, col))
+                break
+            }
             if (grid[p.row][col].ch !in emptyChars) {
                 if (Pos(p.row, col + 1) != p)
                     res.add(Pos(p.row, col + 1))
@@ -109,7 +144,8 @@ internal data class Grid(
                 res.add(Pos(p.row, col))
             }
         }
-        return res.filter { !exclude.contains(it) }
+
+        return res.filter { !exclude.contains(it) }.toSet().toList()
     }
 
     private fun findNextPositionsV1(
@@ -186,4 +222,12 @@ internal data class Pos(val row: Int, val col: Int) {
     internal fun dist(some: Pos) = abs(some.row - this.row) + abs(some.col - this.col)
 }
 
-internal data class Path(val points: MutableList<Pos> = mutableListOf(), val size: Int = 0)
+internal data class Path(val points: MutableList<Pos> = mutableListOf()) {
+    internal fun size(): Int {
+        var res = 0
+        for (idx in 0..points.size - 2) {
+            res += points[idx].dist(points[idx + 1])
+        }
+        return res
+    }
+}
