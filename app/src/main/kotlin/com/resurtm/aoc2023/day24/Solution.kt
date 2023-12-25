@@ -2,28 +2,86 @@ package com.resurtm.aoc2023.day24
 
 fun launchDay24(testCase: String) {
     val neverTellMeTheOdds = NeverTellMeTheOdds.readInput(testCase)
+
     val part1 = neverTellMeTheOdds.solvePart1(
         if (testCase.contains("test")) 7L..27L
         else 200_000_000_000_000L..400_000_000_000_000L
     )
     println("Day 24, part 1: $part1")
+
+    val part2 = neverTellMeTheOdds.solvePart2()
+    println("Day 24, part 2: $part2")
 }
 
 private data class NeverTellMeTheOdds(
     val rays: List<Ray>
 ) {
-    private val lines: List<Pair<Ray, Line>> = rays.map { Pair(it, Line.fromRay(it)) }
+    private val pairs: List<Pair<Ray, Line>> = rays.map { Pair(it, Line.fromRay(it)) }
+
+    fun solvePart2(): Long {
+        val posRange = 0L..25L
+        val velRange = -5L..5L
+        val timeLimit = 50L
+        var result: Ray? = null
+
+        main@ for (ix in posRange) for (iy in posRange) for (iz in posRange) {
+            // println("$ix,$iy,$iz")
+
+            for (vx in velRange) for (vy in velRange) for (vz in velRange) {
+                val pos = Vec(ix, iy, iz)
+                val vel = Vec(vx, vy, vz)
+                val ray = Ray(pos, vel, pos)
+
+                reset()
+                for (t in 0..timeLimit) {
+                    for (pair in pairs) {
+                        if (pair.first.curr == ray.curr)
+                            pair.first.hit = true
+                    }
+                    ray.curr = Vec(ray.curr.x + ray.dir.x, ray.curr.y + ray.dir.y, ray.curr.z + ray.dir.z)
+                    advance()
+                }
+
+                var found = true
+                for (pair in pairs) {
+                    if (!pair.first.hit) {
+                        found = false
+                        break
+                    }
+                }
+                if (found) result = ray
+            }
+        }
+
+        println(result)
+        return if (result == null) throw Exception("Unable to find the result")
+        else result.start.x + result.start.z + result.start.z
+    }
+
+    private fun reset() {
+        for (pair in pairs) {
+            pair.first.curr = pair.first.start
+            pair.first.hit = false
+        }
+    }
+
+    private fun advance() {
+        for (pair in pairs) {
+            val pos = pair.first.curr
+            val vel = pair.first.dir
+            pair.first.curr = Vec(pos.x + vel.x, pos.y + vel.y, pos.z + vel.z)
+        }
+    }
 
     fun solvePart1(interval: LongRange): Long {
         var res = 0L
 
-        for (i in 0..lines.size - 2) for (j in i + 1..<lines.size) {
-            val rayInter = Ray.findIntersection(lines[i].first, lines[j].first)
-            if (!(rayInter.x > 0 && rayInter.y > 0))
+        for (i in 0..pairs.size - 2) for (j in i + 1..<pairs.size) {
+            if (!Ray.hasInter2D(pairs[i].first, pairs[j].first))
                 continue
 
-            val lineInter = Line.findIntersection(lines[i].second, lines[j].second)
-            if ((lineInter.x.toLong() in interval) && (lineInter.y.toLong() in interval))
+            val inter = Line.findInter2D(pairs[i].second, pairs[j].second)
+            if ((inter.x.toLong() in interval) && (inter.y.toLong() in interval))
                 res++
         }
 
@@ -50,7 +108,8 @@ private data class NeverTellMeTheOdds(
                 rays.add(
                     Ray(
                         Vec(parts1[0], parts1[1], parts1[2]),
-                        Vec(parts2[0], parts2[1], parts2[2])
+                        Vec(parts2[0], parts2[1], parts2[2]),
+                        Vec(parts1[0], parts1[1], parts1[2]),
                     )
                 )
             }
@@ -60,22 +119,27 @@ private data class NeverTellMeTheOdds(
     }
 }
 
-private data class Ray(val p: Vec, val d: Vec) {
+private data class Ray(
+    val start: Vec,
+    val dir: Vec,
+    var curr: Vec,
+    var hit: Boolean = false,
+) {
     companion object {
-        internal fun findIntersection(r1: Ray, r2: Ray): VecF {
-            val dx = (r2.p.x - r1.p.x).toDouble()
-            val dy = (r2.p.y - r1.p.y).toDouble()
-            val det = r2.d.x * r1.d.y - r2.d.y * r1.d.x
-            val u = (dy * r2.d.x - dx * r2.d.y) / det
-            val v = (dy * r1.d.x - dx * r1.d.y) / det
-            return VecF(x = u, y = v, z = 0.0)
+        internal fun hasInter2D(r1: Ray, r2: Ray): Boolean {
+            val dx = (r2.start.x - r1.start.x).toDouble()
+            val dy = (r2.start.y - r1.start.y).toDouble()
+            val det = r2.dir.x * r1.dir.y - r2.dir.y * r1.dir.x
+            val u = (dy * r2.dir.x - dx * r2.dir.y) / det
+            val v = (dy * r1.dir.x - dx * r1.dir.y) / det
+            return u > 0 && v > 0
         }
     }
 }
 
 private data class Line(val a: Vec, val b: Vec) {
     companion object {
-        internal fun findIntersection(l1: Line, l2: Line): VecF {
+        internal fun findInter2D(l1: Line, l2: Line): VecF {
             val a1 = (l1.b.y - l1.a.y).toDouble()
             val b1 = (l1.a.x - l1.b.x).toDouble()
             val c1 = (a1 * l1.a.x + b1 * l1.a.y)
@@ -93,8 +157,8 @@ private data class Line(val a: Vec, val b: Vec) {
         }
 
         internal fun fromRay(r: Ray): Line = Line(
-            r.p.copy(),
-            Vec(r.p.x + r.d.x, r.p.y + r.d.y, r.p.z + r.d.z)
+            r.start.copy(),
+            Vec(r.start.x + r.dir.x, r.start.y + r.dir.y, r.start.z + r.dir.z)
         )
     }
 }
