@@ -1,5 +1,10 @@
 package com.resurtm.aoc2023.day24
 
+import kotlin.math.round
+
+/**
+ * See the README.md file for more details on this one.
+ */
 fun launchDay24(testCase: String) {
     val neverTellMeTheOdds = NeverTellMeTheOdds.readInput(testCase)
 
@@ -8,6 +13,9 @@ fun launchDay24(testCase: String) {
         else 200_000_000_000_000L..400_000_000_000_000L
     )
     println("Day 24, part 1: $part1")
+
+    // val part2 = neverTellMeTheOdds.solvePart2Slow()
+    // println("Day 24, part 2: $part2")
 
     val part2 = neverTellMeTheOdds.solvePart2()
     println("Day 24, part 2: $part2")
@@ -18,7 +26,78 @@ private data class NeverTellMeTheOdds(
 ) {
     private val pairs: List<Pair<Ray, Line>> = rays.map { Pair(it, Line.fromRay(it)) }
 
+    /**
+     * See the README.md file for more details on this one.
+     */
     fun solvePart2(): Long {
+        // step 1 -- find velocity
+        val velsX = mutableMapOf<Long, MutableList<Long>>()
+        pairs.forEach {
+            val v = velsX[it.first.dir.x]
+            if (v == null) velsX[it.first.dir.x] = mutableListOf(it.first.start.x)
+            else v.add(it.first.start.x)
+        }
+        val velsY = mutableMapOf<Long, MutableList<Long>>()
+        pairs.forEach {
+            val v = velsY[it.first.dir.y]
+            if (v == null) velsY[it.first.dir.y] = mutableListOf(it.first.start.y)
+            else v.add(it.first.start.y)
+        }
+        val velsZ = mutableMapOf<Long, MutableList<Long>>()
+        pairs.forEach {
+            val v = velsZ[it.first.dir.z]
+            if (v == null) velsZ[it.first.dir.z] = mutableListOf(it.first.start.z)
+            else v.add(it.first.start.z)
+        }
+        val vel = Vec(findVelocity(velsX), findVelocity(velsY), findVelocity(velsZ))
+
+        // step 2 -- find position
+        val results = mutableMapOf<Long, Long>()
+        for (i in pairs.indices) for (j in i + 1..<pairs.size) {
+            val rayA = pairs[i].first
+            val rayB = pairs[j].first
+
+            val ma = (rayA.dir.y - vel.y).toDouble() / (rayA.dir.x - vel.x).toDouble()
+            val mb = (rayB.dir.y - vel.y).toDouble() / (rayB.dir.x - vel.x).toDouble()
+
+            val ca = rayA.start.y - (ma * rayA.start.x)
+            val cb = rayB.start.y - (mb * rayB.start.x)
+
+            val rpx = (cb - ca) / (ma - mb)
+            val rpy = (ma * rpx + ca)
+
+            val time = round((rpx - rayA.start.x) / (rayA.dir.x - vel.x).toDouble())
+            val rpz = rayA.start.z + (rayA.dir.z - vel.z) * time
+
+            val result = (rpx + rpy + rpz).toLong()
+            val ex = results[result]
+            if (ex == null) results[result] = 1
+            else results[result] = ex + 1
+        }
+
+        return results.entries.sortedBy { it.value }.last().key
+    }
+
+    private fun findVelocity(velocities: Map<Long, List<Long>>): Long {
+        var possible = mutableListOf<Long>()
+        for (possib in -1000L..1000L) possible.add(possib)
+
+        for ((vel, pos) in velocities) {
+            if (pos.size < 2) continue
+
+            val newPossible = mutableListOf<Long>()
+            for (possib in possible) {
+                if ((possib - vel) !== 0L && (pos[0] - pos[1]) % (possib - vel) === 0L) {
+                    newPossible.add(possib)
+                }
+            }
+            possible = newPossible
+        }
+
+        return possible.firstOrNull() ?: throw Exception("Unable to find a possible velocity")
+    }
+
+    fun solvePart2Slow(): Long {
         val posRange = 0L..25L
         val velRange = -5L..5L
         val timeLimit = 50L
@@ -54,7 +133,7 @@ private data class NeverTellMeTheOdds(
         }
 
         println(result)
-        return if (result == null) throw Exception("Unable to find the result")
+        return if (result == null) throw Exception("Unable to find a result")
         else result.start.x + result.start.z + result.start.z
     }
 

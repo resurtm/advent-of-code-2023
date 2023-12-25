@@ -29,6 +29,15 @@ Memory: 11889MiB / 31316MiB
 Used [this approach from Reddit](https://www.reddit.com/r/adventofcode/comments/18nevo3/comment/keaiiq7/).
 The code implementation is mine, but the idea has been taken from that thread on Reddit.
 
+### Day 24
+
+The following comments from Reddit were helpful for me:
+
+* [Comment 1](https://www.reddit.com/r/adventofcode/comments/18pnycy/comment/keqf8uq/)
+* [Comment 2](https://www.reddit.com/r/adventofcode/comments/18pnycy/comment/kesv56w/)
+
+The general idea is not mine. However, implementation is mine.
+
 ## License
 
 [MIT License](LICENSE.md)
